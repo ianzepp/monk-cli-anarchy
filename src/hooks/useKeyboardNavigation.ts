@@ -41,15 +41,17 @@ export const useKeyboardNavigation = () => {
   // Global keyboard event handler
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      // Prevent default browser behavior for our function keys
+      // Handle all function keys - prevent browser defaults first
       const functionKeys = ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12'];
+      
       if (functionKeys.includes(event.key)) {
+        // Always prevent default for function keys
         event.preventDefault();
+        event.stopPropagation();
       }
 
       // F3 - Module cycling
       if (event.key === 'F3' && !event.ctrlKey && !event.altKey && !event.shiftKey) {
-        event.preventDefault();
         navigateToNextModule();
         return;
       }
@@ -58,7 +60,6 @@ export const useKeyboardNavigation = () => {
       if (event.altKey && !event.ctrlKey && !event.shiftKey) {
         const number = parseInt(event.key);
         if (number >= 1 && number <= 6) {
-          event.preventDefault();
           navigateToModule(number - 1); // Convert to 0-based index
           return;
         }
@@ -66,7 +67,6 @@ export const useKeyboardNavigation = () => {
 
       // F1 - Help (placeholder for now)
       if (event.key === 'F1' && !event.ctrlKey && !event.altKey && !event.shiftKey) {
-        event.preventDefault();
         showKeyFeedback('F1');
         console.log('F1 Help - Current module:', VAULT_MODULES[getCurrentModuleIndex()]?.name);
         return;
@@ -74,7 +74,6 @@ export const useKeyboardNavigation = () => {
 
       // F5 - Refresh
       if (event.key === 'F5' && !event.ctrlKey && !event.altKey && !event.shiftKey) {
-        event.preventDefault();
         showKeyFeedback('F5');
         window.location.reload();
         return;
@@ -82,7 +81,6 @@ export const useKeyboardNavigation = () => {
 
       // F9 - Command Terminal (placeholder for now)
       if (event.key === 'F9' && !event.ctrlKey && !event.altKey && !event.shiftKey) {
-        event.preventDefault();
         showKeyFeedback('F9');
         console.log('F9 Command Terminal - Not yet implemented');
         return;
@@ -90,7 +88,6 @@ export const useKeyboardNavigation = () => {
 
       // F11 - Fullscreen toggle
       if (event.key === 'F11' && !event.ctrlKey && !event.altKey && !event.shiftKey) {
-        event.preventDefault();
         showKeyFeedback('F11');
         if (document.fullscreenElement) {
           document.exitFullscreen();
