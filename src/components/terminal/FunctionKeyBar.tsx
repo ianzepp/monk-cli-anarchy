@@ -76,15 +76,15 @@ const FunctionKey = styled.div`
 
 export const FunctionKeyBar: React.FC<FunctionKeyBarProps> = ({ position }) => {
   const topKeys = [
-    { key: 'F1', label: 'Help' },
-    { key: 'F2', label: 'Search' },  
-    { key: 'F3', label: 'Next Module' },
-    { key: 'F4', label: 'Execute' },
+    { key: '`', label: 'Next Module' },
+    { key: 'Alt+1-6', label: 'Jump to Module' },  
+    { key: 'Shift+Tab', label: 'Cycle Modules' },
+    { key: 'F3', label: 'Next (if works)' },
     { key: 'F5', label: 'Refresh' },
   ];
 
   const bottomKeys = [
-    { key: 'F6', label: 'Save' },
+    { key: 'Ctrl+Shift+1-6', label: 'Safe Module Jump' },
     { key: 'F7', label: 'Filter' },
     { key: 'F8', label: 'Status' },
     { key: 'F9', label: 'Terminal' },
@@ -95,7 +95,7 @@ export const FunctionKeyBar: React.FC<FunctionKeyBarProps> = ({ position }) => {
 
   return (
     <KeyBarContainer $position={position}>
-      <CtrlPrefix>CTRL+</CtrlPrefix>
+      <CtrlPrefix>KEYS:</CtrlPrefix>
       
       <KeyGroup>
         {keys.map(({ key, label }) => (

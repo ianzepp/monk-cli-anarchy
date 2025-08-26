@@ -44,50 +44,58 @@ export const useKeyboardNavigation = () => {
       // Debug logging
       console.log('Key pressed:', event.key, 'Ctrl:', event.ctrlKey, 'Alt:', event.altKey);
       
-      // Ctrl+Tab - Module cycling (primary method)
-      if (event.key === 'Tab' && event.ctrlKey && !event.altKey && !event.shiftKey) {
+      // SAFE NAVIGATION SHORTCUTS (avoid browser conflicts)
+      
+      // Shift+Tab - Module cycling (safe alternative)
+      if (event.key === 'Tab' && event.shiftKey && !event.ctrlKey && !event.altKey) {
         event.preventDefault();
         event.stopPropagation();
-        console.log('Ctrl+Tab pressed - cycling modules');
+        console.log('Shift+Tab pressed - cycling modules');
         navigateToNextModule();
         return;
       }
 
-      // Ctrl+Numbers - Direct module jumping (primary method)
-      if (event.ctrlKey && !event.altKey && !event.shiftKey && /^[1-6]$/.test(event.key)) {
+      // Ctrl+Shift+Numbers - Direct module jumping (very safe)
+      if (event.ctrlKey && event.shiftKey && !event.altKey && /^[1-6]$/.test(event.key)) {
         const number = parseInt(event.key);
         event.preventDefault();
         event.stopPropagation();
-        console.log(`Ctrl+${number} pressed - jumping to module ${number}`);
+        console.log(`Ctrl+Shift+${number} pressed - jumping to module ${number}`);
         navigateToModule(number - 1);
         return;
       }
 
-      // Simple F3 for module cycling (fallback)
-      if (event.key === 'F3' && !event.ctrlKey && !event.altKey && !event.shiftKey) {
+      // Simple navigation shortcuts (try to avoid conflicts)
+      
+      // Backtick (`) for module cycling
+      if (event.key === '`' && !event.ctrlKey && !event.altKey && !event.shiftKey) {
         event.preventDefault();
         event.stopPropagation();
-        console.log('F3 pressed - cycling modules');
+        console.log('Backtick pressed - cycling modules');
         navigateToNextModule();
         return;
       }
 
-      // Simple help test
-      if (event.key === 'F1' && !event.ctrlKey && !event.altKey && !event.shiftKey) {
-        event.preventDefault();
-        event.stopPropagation();
-        showKeyFeedback('F1');
-        console.log('F1 Help pressed');
-        return;
-      }
-
-      // Alt + Number - Alternative direct module jumping  
+      // Number keys with Alt (safer than Ctrl+numbers)
       if (event.altKey && !event.ctrlKey && !event.shiftKey && /^[1-6]$/.test(event.key)) {
         const number = parseInt(event.key);
         event.preventDefault();
         event.stopPropagation();
         console.log(`Alt+${number} pressed - jumping to module ${number}`);
         navigateToModule(number - 1);
+        return;
+      }
+
+      // Try simple F3 (best effort)
+      if (event.key === 'F3' && !event.ctrlKey && !event.altKey && !event.shiftKey) {
+        try {
+          event.preventDefault();
+          event.stopPropagation();
+          console.log('F3 pressed - cycling modules');
+          navigateToNextModule();
+        } catch (error) {
+          console.error('F3 navigation error:', error);
+        }
         return;
       }
     };
