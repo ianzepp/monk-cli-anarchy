@@ -8,6 +8,8 @@
     "build": "tsc",
     "dev": "tsx src/index.tsx",
     "demo": "tsx src/demo.tsx",
+    "interactive": "tsx src/interactive.tsx",
+    "watch": "tsx watch src/interactive.tsx",
     "start": "node dist/index.js",
     "vault-tec": "tsx src/index.tsx"
   },
