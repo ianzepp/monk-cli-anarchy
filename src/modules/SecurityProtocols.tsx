@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { TerminalWidget } from '../components/terminal/TerminalWidget';
 import { TerminalButton } from '../components/terminal/TerminalButton';
+import { VaultLayout, VaultSection } from '../components/terminal/VaultLayout';
 import { terminalTheme } from '../styles/terminal-theme';
 
 const SecurityContainer = styled.div`
@@ -52,21 +53,38 @@ const RingStatus = styled.div<{ status: 'active' | 'warning' | 'error' }>`
   }
 `;
 
+const RingConfigurationList = styled.div`
+  font-family: monospace;
+  font-size: 12px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+`;
+
 export const SecurityProtocols: React.FC = () => {
   return (
-    <SecurityContainer>
-      <ModuleHeader>
-        <h1>┌─ AUTOMATED SECURITY MONITORING ─┐</h1>
-        <div className="subtitle">Observer Pipeline Management</div>
-      </ModuleHeader>
+    <VaultLayout>
+      {/* Header Section */}
+      <VaultSection>
+        <ModuleHeader>
+          <h1>┌─ AUTOMATED SECURITY MONITORING ─┐</h1>
+          <div className="subtitle">Observer Pipeline Management</div>
+        </ModuleHeader>
+      </VaultSection>
 
-      <div style={{ margin: '0 20px' }}>
+      {/* Status Overview */}
+      <VaultSection>
         <TerminalWidget title="OBSERVER PIPELINE STATUS">
           <div>Status: ●OPERATIONAL | Total Rings: 10 | Active: 10</div>
         </TerminalWidget>
+      </VaultSection>
 
-        <TerminalWidget title="SECURITY RING CONFIGURATION">
-          <div style={{ fontFamily: 'monospace', fontSize: '12px' }}>
+      {/* Ring Configuration - Primary expanding content */}
+      <VaultSection flex minHeight="250px">
+        <TerminalWidget title="SECURITY RING CONFIGURATION" flex scrollable>
+          <RingConfigurationList>
             <RingStatus status="active">
               <span className="ring-indicator">●</span> RING 0: Data Preparation | ●ACTIVE | 12ms avg
             </RingStatus>
@@ -97,9 +115,20 @@ export const SecurityProtocols: React.FC = () => {
             <RingStatus status="active">
               <span className="ring-indicator">●</span> RING 9: Notifications | ●ACTIVE | 67ms avg
             </RingStatus>
-          </div>
+            {/* Add more ring details for scrolling */}
+            {Array.from({ length: 20 }, (_, i) => (
+              <RingStatus key={i} status={Math.random() > 0.8 ? 'warning' : 'active'}>
+                <span className="ring-indicator">{Math.random() > 0.8 ? '⚠' : '●'}</span> 
+                OBSERVER_{i + 10}: {['Validation', 'Security', 'Audit', 'Monitor'][Math.floor(Math.random() * 4)]} | 
+                ●ACTIVE | {Math.floor(Math.random() * 100) + 5}ms avg
+              </RingStatus>
+            ))}
+          </RingConfigurationList>
         </TerminalWidget>
+      </VaultSection>
 
+      {/* Security Events */}
+      <VaultSection>
         <TerminalWidget title="RECENT SECURITY EVENTS">
           <div style={{ fontFamily: 'monospace', fontSize: '12px' }}>
             <div>14:32:15 │ VIOLATION │ Invalid schema access attempt      │</div>
@@ -108,7 +137,10 @@ export const SecurityProtocols: React.FC = () => {
             <div>14:29:33 │ INFO      │ Observer ring reconfigured         │</div>
           </div>
         </TerminalWidget>
+      </VaultSection>
 
+      {/* Action Bar */}
+      <VaultSection>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', margin: '20px', padding: '20px' }}>
           <TerminalButton variant="primary" hotkey="F4">
             CONFIGURE RINGS
@@ -120,7 +152,7 @@ export const SecurityProtocols: React.FC = () => {
             EMERGENCY STOP
           </TerminalButton>
         </div>
-      </div>
-    </SecurityContainer>
+      </VaultSection>
+    </VaultLayout>
   );
 };

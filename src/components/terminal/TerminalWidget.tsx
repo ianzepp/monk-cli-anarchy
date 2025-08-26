@@ -8,9 +8,16 @@ interface TerminalWidgetProps {
   className?: string;
   width?: string;
   height?: string;
+  flex?: boolean; // Whether content should expand to fill available space
+  scrollable?: boolean; // Whether content should scroll if it overflows
 }
 
-const WidgetContainer = styled.div<{ width?: string; height?: string }>`
+const WidgetContainer = styled.div<{ 
+  width?: string; 
+  height?: string;
+  $flex?: boolean;
+  $scrollable?: boolean;
+}>`
   background: ${terminalTheme.colors.bunkerBlack};
   border: 1px solid ${terminalTheme.colors.vaultGreen};
   color: ${terminalTheme.colors.vaultGreen};
@@ -20,6 +27,14 @@ const WidgetContainer = styled.div<{ width?: string; height?: string }>`
   width: ${props => props.width || 'auto'};
   height: ${props => props.height || 'auto'};
   margin: 4px;
+  
+  /* Flex layout for expandable widgets */
+  ${props => props.$flex && `
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0; /* Allow shrinking below content size */
+  `}
   
   /* CRT glow effect */
   box-shadow: 
@@ -47,9 +62,23 @@ const WidgetHeader = styled.div`
   }
 `;
 
-const WidgetContent = styled.div`
+const WidgetContent = styled.div<{ $flex?: boolean; $scrollable?: boolean }>`
   padding: 12px;
   min-height: 40px;
+  
+  /* Flex content for expandable widgets */
+  ${props => props.$flex && `
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  `}
+  
+  /* Scrollable content */
+  ${props => props.$scrollable && `
+    overflow-y: auto;
+    overflow-x: hidden;
+  `}
 `;
 
 export const TerminalWidget: React.FC<TerminalWidgetProps> = ({
@@ -58,11 +87,21 @@ export const TerminalWidget: React.FC<TerminalWidgetProps> = ({
   className,
   width,
   height,
+  flex = false,
+  scrollable = false,
 }) => {
   return (
-    <WidgetContainer className={className} width={width} height={height}>
+    <WidgetContainer 
+      className={className} 
+      width={width} 
+      height={height}
+      $flex={flex}
+      $scrollable={scrollable}
+    >
       {title && <WidgetHeader>{title}</WidgetHeader>}
-      <WidgetContent>{children}</WidgetContent>
+      <WidgetContent $flex={flex} $scrollable={scrollable}>
+        {children}
+      </WidgetContent>
     </WidgetContainer>
   );
 };

@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { TerminalWidget } from '../components/terminal/TerminalWidget';
 import { TerminalButton } from '../components/terminal/TerminalButton';
+import { VaultLayout, VaultSection } from '../components/terminal/VaultLayout';
 import { terminalTheme } from '../styles/terminal-theme';
 
 const LaboratoryContainer = styled.div`
@@ -41,7 +42,11 @@ const SchemaEditor = styled.div`
   font-family: ${terminalTheme.fonts.terminal};
   font-size: ${terminalTheme.sizes.terminalSm};
   color: ${terminalTheme.colors.vaultGreen};
-  min-height: 200px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
   
   .line-numbers {
     color: ${terminalTheme.colors.dustBrown};
@@ -51,13 +56,17 @@ const SchemaEditor = styled.div`
 
 export const SchemaLaboratory: React.FC = () => {
   return (
-    <LaboratoryContainer>
-      <ModuleHeader>
-        <h1>┌─ RESEARCH & DEVELOPMENT LAB ─┐</h1>
-        <div className="subtitle">Schema Development & Deployment</div>
-      </ModuleHeader>
+    <VaultLayout>
+      {/* Header Section */}
+      <VaultSection>
+        <ModuleHeader>
+          <h1>┌─ RESEARCH & DEVELOPMENT LAB ─┐</h1>
+          <div className="subtitle">Schema Development & Deployment</div>
+        </ModuleHeader>
+      </VaultSection>
 
-      <div style={{ margin: '0 20px' }}>
+      {/* Schema List Section */}
+      <VaultSection>
         <TerminalWidget title="ACTIVE EXPERIMENTS (SCHEMAS)">
           <div style={{ fontFamily: 'monospace', fontSize: '12px' }}>
             <div>┌───────────────────────┬─────────┬──────────┬─────────────┐</div>
@@ -70,20 +79,45 @@ export const SchemaLaboratory: React.FC = () => {
             <div>└───────────────────────┴─────────┴──────────┴─────────────┘</div>
           </div>
         </TerminalWidget>
+      </VaultSection>
 
-        <TerminalWidget title="SCHEMA EDITOR: personnel_records">
+      {/* Schema Editor - Primary expanding content */}
+      <VaultSection flex minHeight="300px">
+        <TerminalWidget title="SCHEMA EDITOR: personnel_records" flex scrollable>
           <SchemaEditor>
             <div><span className="line-numbers">001│</span>{`{`}</div>
             <div><span className="line-numbers">002│</span>{`  "type": "object",`}</div>
             <div><span className="line-numbers">003│</span>{`  "properties": {`}</div>
             <div><span className="line-numbers">004│</span>{`    "id": {"type": "string", "format": "vault-id"},`}</div>
             <div><span className="line-numbers">005│</span>{`    "name": {"type": "string", "maxLength": 50},`}</div>
-            <div><span className="line-numbers">006│</span>{`    "security_level": {"enum": ["CIVILIAN", "OFFICER"]}`}</div>
-            <div><span className="line-numbers">007│</span>{`  }`}</div>
-            <div><span className="line-numbers">008│</span>{`}`}</div>
+            <div><span className="line-numbers">006│</span>{`    "security_level": {"enum": ["CIVILIAN", "OFFICER"]},`}</div>
+            <div><span className="line-numbers">007│</span>{`    "section": {"type": "string"},`}</div>
+            <div><span className="line-numbers">008│</span>{`    "status": {"enum": ["ACTIVE", "INACTIVE", "TERMINATED"]},`}</div>
+            <div><span className="line-numbers">009│</span>{`    "last_seen": {"type": "string", "format": "date"},`}</div>
+            <div><span className="line-numbers">010│</span>{`    "access_permissions": {`}</div>
+            <div><span className="line-numbers">011│</span>{`      "type": "array",`}</div>
+            <div><span className="line-numbers">012│</span>{`      "items": {"type": "string"}`}</div>
+            <div><span className="line-numbers">013│</span>{`    },`}</div>
+            <div><span className="line-numbers">014│</span>{`    "medical_status": {"type": "string"},`}</div>
+            <div><span className="line-numbers">015│</span>{`    "vault_entry_date": {"type": "string", "format": "date"},`}</div>
+            <div><span className="line-numbers">016│</span>{`    "emergency_contact": {"type": "string"},`}</div>
+            <div><span className="line-numbers">017│</span>{`    "special_notes": {"type": "string"},`}</div>
+            {/* Add more lines for scrolling */}
+            {Array.from({ length: 30 }, (_, i) => (
+              <div key={i}>
+                <span className="line-numbers">{String(i + 18).padStart(3, '0')}│</span>
+                {`    "field_${i + 18}": {"type": "${Math.random() > 0.5 ? 'string' : 'number'}"},`}
+              </div>
+            ))}
+            <div><span className="line-numbers">049│</span>{`  },`}</div>
+            <div><span className="line-numbers">050│</span>{`  "required": ["id", "name", "security_level", "status"]`}</div>
+            <div><span className="line-numbers">051│</span>{`}`}</div>
           </SchemaEditor>
         </TerminalWidget>
+      </VaultSection>
 
+      {/* Action Bar */}
+      <VaultSection>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', margin: '20px', padding: '20px' }}>
           <TerminalButton variant="primary" hotkey="F3">
             DEPLOY SCHEMA
@@ -98,7 +132,7 @@ export const SchemaLaboratory: React.FC = () => {
             BACKUP
           </TerminalButton>
         </div>
-      </div>
-    </LaboratoryContainer>
+      </VaultSection>
+    </VaultLayout>
   );
 };
