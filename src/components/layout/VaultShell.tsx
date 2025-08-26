@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 import { KeyboardFeedback } from '../terminal/KeyboardFeedback';
+import { FunctionKeyBar } from '../terminal/FunctionKeyBar';
 import { terminalTheme } from '../../styles/terminal-theme';
 import { VAULT_MODULES } from '../../types/navigation';
 
@@ -18,35 +19,20 @@ const ShellContainer = styled.div`
   overflow: hidden;
 `;
 
-const StatusBar = styled.div`
-  background: ${terminalTheme.colors.shadowGray};
-  border-top: 1px solid ${terminalTheme.colors.vaultGreen};
+const StatusInfo = styled.div`
+  background: ${terminalTheme.colors.bunkerBlack};
+  border: 1px solid ${terminalTheme.colors.vaultGreen};
   color: ${terminalTheme.colors.vaultGreen};
   font-family: ${terminalTheme.fonts.terminal};
   font-size: ${terminalTheme.sizes.terminalXs};
-  padding: 4px 12px;
+  padding: 6px 12px;
+  margin: 0 20px;
   display: flex;
-  gap: 16px;
+  justify-content: space-between;
   align-items: center;
   flex-shrink: 0;
-  z-index: 100;
-  
-  .shortcut {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    
-    .key {
-      background: ${terminalTheme.colors.bunkerBlack};
-      border: 1px solid ${terminalTheme.colors.vaultGreen};
-      padding: 2px 6px;
-      border-radius: 2px;
-      font-weight: bold;
-    }
-  }
   
   .module-info {
-    margin-left: auto;
     display: flex;
     gap: 8px;
     align-items: center;
@@ -55,6 +41,11 @@ const StatusBar = styled.div`
       color: ${terminalTheme.colors.amberAlert};
       font-weight: bold;
     }
+  }
+  
+  .shortcuts-help {
+    color: ${terminalTheme.colors.dustBrown};
+    font-size: ${terminalTheme.sizes.terminalXs};
   }
 `;
 
@@ -92,6 +83,9 @@ export const VaultShell: React.FC<VaultShellProps> = ({ children }) => {
       {/* Keyboard feedback overlay */}
       <KeyboardFeedback pressedKey={pressedKey} />
 
+      {/* Top function key bar (F1-F5) */}
+      <FunctionKeyBar position="top" />
+
       {/* Module indicator in top-right */}
       <ModuleIndicator>
         <div className="breadcrumb">
@@ -105,37 +99,20 @@ export const VaultShell: React.FC<VaultShellProps> = ({ children }) => {
         {children}
       </ContentArea>
 
-      {/* Status bar with keyboard shortcuts */}
-      <StatusBar>
-        <div className="shortcut">
-          <span className="key">Ctrl+Tab</span>
-          <span>Next Module</span>
-        </div>
-        <div className="shortcut">
-          <span className="key">Ctrl+1-6</span>
-          <span>Jump to Module</span>
-        </div>
-        <div className="shortcut">
-          <span className="key">Ctrl+H</span>
-          <span>Help</span>
-        </div>
-        <div className="shortcut">
-          <span className="key">Ctrl+R</span>
-          <span>Refresh</span>
-        </div>
-        <div className="shortcut">
-          <span className="key">F3/Ctrl+F3</span>
-          <span>Module Cycle</span>
-        </div>
-        
+      {/* Status info bar */}
+      <StatusInfo>
         <div className="module-info">
-          <span>Firefox Safe Mode Active</span>
-          <span>•</span>
-          <span>Current:</span>
+          <span>Current Module:</span>
           <span className="current">{currentModule?.name || 'Unknown'}</span>
           <span>({currentModuleIndex + 1}/{VAULT_MODULES.length})</span>
         </div>
-      </StatusBar>
+        <div className="shortcuts-help">
+          Use Ctrl+1-6 or Ctrl+Tab for navigation • Firefox compatible mode
+        </div>
+      </StatusInfo>
+
+      {/* Bottom function key bar (F6-F10) */}
+      <FunctionKeyBar position="bottom" />
     </ShellContainer>
   );
 };

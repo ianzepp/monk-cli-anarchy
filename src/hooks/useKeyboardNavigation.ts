@@ -72,10 +72,24 @@ export const useKeyboardNavigation = () => {
             console.log('Ctrl+F1 Help - Current module:', VAULT_MODULES[getCurrentModuleIndex()]?.name);
             return;
             
+          case 'F2':
+            event.preventDefault();
+            event.stopPropagation();
+            showKeyFeedback('Ctrl+F2');
+            console.log('Ctrl+F2 Search - Not yet implemented');
+            return;
+            
           case 'F3':
             event.preventDefault();
             event.stopPropagation();
             navigateToNextModule();
+            return;
+            
+          case 'F4':
+            event.preventDefault();
+            event.stopPropagation();
+            showKeyFeedback('Ctrl+F4');
+            console.log('Ctrl+F4 Execute - Context action');
             return;
             
           case 'F5':
@@ -85,6 +99,27 @@ export const useKeyboardNavigation = () => {
             window.location.reload();
             return;
             
+          case 'F6':
+            event.preventDefault();
+            event.stopPropagation();
+            showKeyFeedback('Ctrl+F6');
+            console.log('Ctrl+F6 Save - Not yet implemented');
+            return;
+            
+          case 'F7':
+            event.preventDefault();
+            event.stopPropagation();
+            showKeyFeedback('Ctrl+F7');
+            console.log('Ctrl+F7 Filter - Not yet implemented');
+            return;
+            
+          case 'F8':
+            event.preventDefault();
+            event.stopPropagation();
+            showKeyFeedback('Ctrl+F8');
+            console.log('Ctrl+F8 Observer Status - Not yet implemented');
+            return;
+            
           case 'F9':
             event.preventDefault();
             event.stopPropagation();
@@ -92,15 +127,11 @@ export const useKeyboardNavigation = () => {
             console.log('Ctrl+F9 Command Terminal - Not yet implemented');
             return;
             
-          case 'F11':
+          case 'F10':
             event.preventDefault();
             event.stopPropagation();
-            showKeyFeedback('Ctrl+F11');
-            if (document.fullscreenElement) {
-              document.exitFullscreen();
-            } else {
-              document.documentElement.requestFullscreen();
-            }
+            showKeyFeedback('Ctrl+F10');
+            console.log('Ctrl+F10 Emergency - Not yet implemented');
             return;
         }
       }
