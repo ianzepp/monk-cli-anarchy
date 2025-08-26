@@ -106,8 +106,16 @@ export const VaultShell: React.FC<VaultShellProps> = ({ children }) => {
           <span className="current">{currentModule?.name || 'Unknown'}</span>
           <span>({currentModuleIndex + 1}/{VAULT_MODULES.length})</span>
         </div>
-        <div className="shortcuts-help">
-          Use Ctrl+1-6 or Ctrl+Tab for navigation • Firefox compatible mode
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button onClick={() => window.location.href = '/registry'} style={{ padding: '4px 8px' }}>
+            Test Registry
+          </button>
+          <button onClick={() => window.location.href = '/schema'} style={{ padding: '4px 8px' }}>
+            Test Schema
+          </button>
+          <button onClick={() => window.location.href = '/'} style={{ padding: '4px 8px' }}>
+            Test Home
+          </button>
         </div>
       </StatusInfo>
 

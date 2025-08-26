@@ -20,94 +20,52 @@ export const useKeyboardNavigation = () => {
     setTimeout(() => setPressedKey(null), duration);
   };
 
-  // Navigate to next module (F3 cycling)
+  // Navigate to next module (F3 cycling) - using safe window.location method
   const navigateToNextModule = () => {
     const currentIndex = getCurrentModuleIndex();
     const nextIndex = (currentIndex + 1) % VAULT_MODULES.length;
     const nextModule = VAULT_MODULES[nextIndex];
-    showKeyFeedback('F3');
-    navigate(nextModule.path);
+    showKeyFeedback('Next');
+    console.log(`Navigating to: ${nextModule.path} (${nextModule.name})`);
+    window.location.href = nextModule.path;
   };
 
-  // Navigate to specific module by index (Alt+1-6)
+  // Navigate to specific module by index (Alt+1-6) - using safe window.location method
   const navigateToModule = (moduleIndex: number) => {
     if (moduleIndex >= 0 && moduleIndex < VAULT_MODULES.length) {
       const module = VAULT_MODULES[moduleIndex];
-      showKeyFeedback(`Alt+${moduleIndex + 1}`);
-      navigate(module.path);
+      showKeyFeedback(`Module ${moduleIndex + 1}`);
+      console.log(`Navigating to: ${module.path} (${module.name})`);
+      window.location.href = module.path;
     }
   };
 
-  // Global keyboard event handler
+  // Simple keyboard handler for testing
   useEffect(() => {
+    console.log('Keyboard navigation hook loaded');
+    console.log('Current location:', location.pathname);
+    
     const handleKeyDown = (event: KeyboardEvent) => {
-      // Debug logging
-      console.log('Key pressed:', event.key, 'Ctrl:', event.ctrlKey, 'Alt:', event.altKey);
+      console.log('Key pressed:', event.key);
       
-      // SAFE NAVIGATION SHORTCUTS (avoid browser conflicts)
-      
-      // Shift+Tab - Module cycling (safe alternative)
-      if (event.key === 'Tab' && event.shiftKey && !event.ctrlKey && !event.altKey) {
+      // Simple backtick test
+      if (event.key === '`') {
+        console.log('Backtick pressed - attempting navigation');
         event.preventDefault();
-        event.stopPropagation();
-        console.log('Shift+Tab pressed - cycling modules');
         navigateToNextModule();
-        return;
       }
-
-      // Ctrl+Shift+Numbers - Direct module jumping (very safe)
-      if (event.ctrlKey && event.shiftKey && !event.altKey && /^[1-6]$/.test(event.key)) {
-        const number = parseInt(event.key);
-        event.preventDefault();
-        event.stopPropagation();
-        console.log(`Ctrl+Shift+${number} pressed - jumping to module ${number}`);
-        navigateToModule(number - 1);
-        return;
-      }
-
-      // Simple navigation shortcuts (try to avoid conflicts)
       
-      // Backtick (`) for module cycling
-      if (event.key === '`' && !event.ctrlKey && !event.altKey && !event.shiftKey) {
+      // Simple Alt+1 test
+      if (event.key === '1' && event.altKey) {
+        console.log('Alt+1 pressed - attempting navigation to overseer');
         event.preventDefault();
-        event.stopPropagation();
-        console.log('Backtick pressed - cycling modules');
-        navigateToNextModule();
-        return;
-      }
-
-      // Number keys with Alt (safer than Ctrl+numbers)
-      if (event.altKey && !event.ctrlKey && !event.shiftKey && /^[1-6]$/.test(event.key)) {
-        const number = parseInt(event.key);
-        event.preventDefault();
-        event.stopPropagation();
-        console.log(`Alt+${number} pressed - jumping to module ${number}`);
-        navigateToModule(number - 1);
-        return;
-      }
-
-      // Try simple F3 (best effort)
-      if (event.key === 'F3' && !event.ctrlKey && !event.altKey && !event.shiftKey) {
-        try {
-          event.preventDefault();
-          event.stopPropagation();
-          console.log('F3 pressed - cycling modules');
-          navigateToNextModule();
-        } catch (error) {
-          console.error('F3 navigation error:', error);
-        }
-        return;
+        navigateToModule(0);
       }
     };
 
-    // Add event listener to document
     document.addEventListener('keydown', handleKeyDown);
-
-    // Cleanup on unmount
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [navigate, location.pathname]);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [location.pathname]);
 
   // Return current module info for use in components
   return {
