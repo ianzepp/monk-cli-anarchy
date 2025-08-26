@@ -78,19 +78,38 @@ export interface KeyboardShortcut {
   context?: string; // Which module/context this applies to
 }
 
+// Primary shortcuts - these work reliably in ALL browsers
 export const GLOBAL_SHORTCUTS: KeyboardShortcut[] = [
-  { key: 'F1', action: 'help', description: 'Context-sensitive help' },
+  // Tab key for module cycling (like Alt+Tab)
+  { key: 'Tab', ctrlKey: true, action: 'module-cycle', description: 'Cycle through modules' },
+  
+  // Number keys for direct access
+  { key: '1', ctrlKey: true, action: 'navigate-overseer', description: 'Overseer Console' },
+  { key: '2', ctrlKey: true, action: 'navigate-registry', description: 'Department Registry' },
+  { key: '3', ctrlKey: true, action: 'navigate-schema', description: 'Schema Laboratory' },
+  { key: '4', ctrlKey: true, action: 'navigate-population', description: 'Population Management' },
+  { key: '5', ctrlKey: true, action: 'navigate-security', description: 'Security Protocols' },
+  { key: '6', ctrlKey: true, action: 'navigate-files', description: 'File Archives' },
+  
+  // Other reliable shortcuts
+  { key: 'h', ctrlKey: true, action: 'help', description: 'Help system' },
+  { key: 'r', ctrlKey: true, action: 'refresh', description: 'Refresh' },
+  { key: 't', ctrlKey: true, action: 'terminal', description: 'Command terminal' },
+  { key: '`', ctrlKey: true, action: 'terminal-alt', description: 'Command terminal (alt)' },
+];
+
+// Fallback function key mappings (best effort)
+export const FUNCTION_KEY_SHORTCUTS: KeyboardShortcut[] = [
+  { key: 'F1', action: 'help', description: 'Help (may not work in Firefox)' },
   { key: 'F2', action: 'search', description: 'Global search' },
-  { key: 'F3', action: 'module-cycle', description: 'Cycle through modules' },
-  { key: 'F4', action: 'execute', description: 'Execute selected action' },
-  { key: 'F5', action: 'refresh', description: 'Refresh current view' },
+  { key: 'F3', action: 'module-cycle', description: 'Cycle modules' },
+  { key: 'F4', action: 'execute', description: 'Execute action' },
   { key: 'F6', action: 'save', description: 'Quick save' },
   { key: 'F7', action: 'filter', description: 'Toggle filters' },
-  { key: 'F8', action: 'observer-status', description: 'Observer status overlay' },
-  { key: 'F9', action: 'terminal', description: 'Command terminal mode' },
-  { key: 'F10', action: 'emergency', description: 'Emergency protocols' },
-  { key: 'F11', action: 'fullscreen', description: 'Toggle fullscreen' },
-  { key: 'F12', action: 'diagnostics', description: 'System diagnostics' }
+  { key: 'F8', action: 'observer-status', description: 'Observer status' },
+  { key: 'F9', action: 'terminal', description: 'Command terminal' },
+  { key: 'F10', action: 'emergency', description: 'Emergency' },
+  { key: 'F12', action: 'diagnostics', description: 'Diagnostics' }
 ];
 
 // Alt + Number shortcuts for direct module access

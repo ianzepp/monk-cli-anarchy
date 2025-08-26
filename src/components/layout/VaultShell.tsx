@@ -108,27 +108,29 @@ export const VaultShell: React.FC<VaultShellProps> = ({ children }) => {
       {/* Status bar with keyboard shortcuts */}
       <StatusBar>
         <div className="shortcut">
-          <span className="key">F3</span>
+          <span className="key">Ctrl+Tab</span>
           <span>Next Module</span>
         </div>
         <div className="shortcut">
-          <span className="key">Alt+1-6</span>
+          <span className="key">Ctrl+1-6</span>
           <span>Jump to Module</span>
         </div>
         <div className="shortcut">
-          <span className="key">F1</span>
+          <span className="key">Ctrl+H</span>
           <span>Help</span>
         </div>
         <div className="shortcut">
-          <span className="key">F5</span>
+          <span className="key">Ctrl+R</span>
           <span>Refresh</span>
         </div>
         <div className="shortcut">
-          <span className="key">F11</span>
-          <span>Fullscreen</span>
+          <span className="key">F3/Ctrl+F3</span>
+          <span>Module Cycle</span>
         </div>
         
         <div className="module-info">
+          <span>Firefox Safe Mode Active</span>
+          <span>•</span>
           <span>Current:</span>
           <span className="current">{currentModule?.name || 'Unknown'}</span>
           <span>({currentModuleIndex + 1}/{VAULT_MODULES.length})</span>
