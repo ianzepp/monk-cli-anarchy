@@ -40,26 +40,53 @@ export const useKeyboardNavigation = () => {
     }
   };
 
-  // Simple keyboard handler for testing
+  // Safe keyboard shortcuts that avoid browser conflicts
   useEffect(() => {
     console.log('Keyboard navigation hook loaded');
     console.log('Current location:', location.pathname);
     
     const handleKeyDown = (event: KeyboardEvent) => {
-      console.log('Key pressed:', event.key);
-      
-      // Simple backtick test
+      // Backtick (`) - Module cycling (SAFE - works perfectly)
       if (event.key === '`') {
-        console.log('Backtick pressed - attempting navigation');
         event.preventDefault();
+        console.log('Backtick - cycling to next module');
         navigateToNextModule();
+        return;
       }
       
-      // Simple Alt+1 test
-      if (event.key === '1' && event.altKey) {
-        console.log('Alt+1 pressed - attempting navigation to overseer');
+      // Tilde (~) - Reverse module cycling  
+      if (event.key === '~') {
         event.preventDefault();
+        console.log('Tilde - cycling to previous module');
+        const currentIndex = getCurrentModuleIndex();
+        const prevIndex = currentIndex === 0 ? VAULT_MODULES.length - 1 : currentIndex - 1;
+        navigateToModule(prevIndex);
+        return;
+      }
+
+      // Alt+1 only (SAFE - works perfectly)
+      if (event.key === '1' && event.altKey && !event.ctrlKey && !event.shiftKey) {
+        event.preventDefault();
+        console.log('Alt+1 - jumping to Overseer Console');
         navigateToModule(0);
+        return;
+      }
+
+      // Ctrl+G for "Go to module" dialog (SAFE)
+      if (event.key === 'g' && event.ctrlKey && !event.altKey && !event.shiftKey) {
+        event.preventDefault();
+        console.log('Ctrl+G - module selection (not implemented yet)');
+        showKeyFeedback('Ctrl+G');
+        return;
+      }
+
+      // Escape - Always go back to Overseer (SAFE)
+      if (event.key === 'Escape' && !event.ctrlKey && !event.altKey && !event.shiftKey) {
+        event.preventDefault();
+        console.log('Escape - returning to Overseer Console');
+        showKeyFeedback('ESC');
+        navigateToModule(0);
+        return;
       }
     };
 

@@ -77,18 +77,18 @@ const FunctionKey = styled.div`
 export const FunctionKeyBar: React.FC<FunctionKeyBarProps> = ({ position }) => {
   const topKeys = [
     { key: '`', label: 'Next Module' },
-    { key: 'Alt+1-6', label: 'Jump to Module' },  
-    { key: 'Shift+Tab', label: 'Cycle Modules' },
-    { key: 'F3', label: 'Next (if works)' },
-    { key: 'F5', label: 'Refresh' },
+    { key: '~', label: 'Prev Module' },  
+    { key: 'Alt+1', label: 'Overseer' },
+    { key: 'ESC', label: 'Home' },
+    { key: 'Ctrl+G', label: 'Go To' },
   ];
 
   const bottomKeys = [
-    { key: 'Ctrl+Shift+1-6', label: 'Safe Module Jump' },
-    { key: 'F7', label: 'Filter' },
-    { key: 'F8', label: 'Status' },
-    { key: 'F9', label: 'Terminal' },
-    { key: 'F10', label: 'Emergency' },
+    { key: 'Working Keys Only', label: 'Browser Safe Mode' },
+    { key: 'Use ` or ~', label: 'Module Cycling' },
+    { key: 'Alt+1 Only', label: 'Direct Access' },
+    { key: 'ESC', label: 'Return Home' },
+    { key: 'Test Buttons', label: 'Mouse Navigation' },
   ];
 
   const keys = position === 'top' ? topKeys : bottomKeys;
