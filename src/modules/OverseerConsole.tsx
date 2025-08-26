@@ -5,13 +5,17 @@ import { TerminalButton } from '../components/terminal/TerminalButton';
 import { terminalTheme } from '../styles/terminal-theme';
 
 const ConsoleContainer = styled.div`
-  padding: 20px;
+  padding: 0;
+  margin: 0;
+  width: 100vw;
   min-height: 100vh;
   background: ${terminalTheme.colors.bunkerBlack};
+  box-sizing: border-box;
 `;
 
 const MainHeader = styled.div`
   text-align: center;
+  margin: 20px;
   margin-bottom: 20px;
   padding: 20px;
   border: 2px solid ${terminalTheme.colors.vaultGreen};
@@ -40,7 +44,7 @@ const DashboardGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 20px;
-  margin-bottom: 20px;
+  margin: 0 20px 20px 20px;
 `;
 
 const StatusIndicator = styled.div<{ status: 'ok' | 'warning' | 'error' }>`
@@ -102,7 +106,7 @@ const ActionBar = styled.div`
   display: flex;
   justify-content: center;
   gap: 16px;
-  margin-top: 20px;
+  margin: 20px;
   padding: 20px;
   border-top: 1px solid ${terminalTheme.colors.vaultGreen};
 `;
@@ -138,8 +142,9 @@ export const OverseerConsole: React.FC = () => {
         </TerminalWidget>
       </DashboardGrid>
 
-      <TerminalWidget title="RECENT OPERATIONS">
-        <OperationsList>
+      <div style={{ margin: '0 20px' }}>
+        <TerminalWidget title="RECENT OPERATIONS">
+          <OperationsList>
           <div className="operation">
             <span className="time">14:32:07</span>
             <span className="type">PERSONNEL</span>
@@ -158,8 +163,9 @@ export const OverseerConsole: React.FC = () => {
             <span className="action">DELETE</span>
             <span className="details">STIMPAK_BATCH_A42</span>
           </div>
-        </OperationsList>
-      </TerminalWidget>
+          </OperationsList>
+        </TerminalWidget>
+      </div>
 
       <ActionBar>
         <TerminalButton variant="primary" hotkey="F9">

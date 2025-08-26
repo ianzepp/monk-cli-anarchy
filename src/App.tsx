@@ -1,12 +1,12 @@
 import React from 'react';
 import { GlobalTerminalStyles } from './styles/global-styles';
-import { OverseerConsole } from './modules/OverseerConsole';
+import { AppRouter } from './router/AppRouter';
 
 function App() {
   return (
     <>
       <GlobalTerminalStyles />
-      <OverseerConsole />
+      <AppRouter />
     </>
   );
 }

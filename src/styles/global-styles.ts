@@ -41,6 +41,9 @@ export const GlobalTerminalStyles = createGlobalStyle`
 
   #root {
     min-height: 100vh;
+    width: 100vw;
+    margin: 0;
+    padding: 0;
     display: flex;
     flex-direction: column;
   }
