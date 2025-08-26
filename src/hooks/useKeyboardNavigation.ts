@@ -41,132 +41,54 @@ export const useKeyboardNavigation = () => {
   // Global keyboard event handler
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      // PRIMARY SHORTCUTS - Ctrl+Function Keys (Firefox-safe)
+      // Debug logging
+      console.log('Key pressed:', event.key, 'Ctrl:', event.ctrlKey, 'Alt:', event.altKey);
       
       // Ctrl+Tab - Module cycling (primary method)
       if (event.key === 'Tab' && event.ctrlKey && !event.altKey && !event.shiftKey) {
         event.preventDefault();
         event.stopPropagation();
+        console.log('Ctrl+Tab pressed - cycling modules');
         navigateToNextModule();
         return;
       }
 
       // Ctrl+Numbers - Direct module jumping (primary method)
-      if (event.ctrlKey && !event.altKey && !event.shiftKey) {
+      if (event.ctrlKey && !event.altKey && !event.shiftKey && /^[1-6]$/.test(event.key)) {
         const number = parseInt(event.key);
-        if (number >= 1 && number <= 6) {
-          event.preventDefault();
-          event.stopPropagation();
-          navigateToModule(number - 1);
-          return;
-        }
-      }
-
-      // Ctrl+Function Keys (Firefox-safe alternatives)
-      if (event.ctrlKey && !event.altKey && !event.shiftKey) {
-        switch (event.key) {
-          case 'F1':
-            event.preventDefault();
-            event.stopPropagation();
-            showKeyFeedback('Ctrl+F1');
-            console.log('Ctrl+F1 Help - Current module:', VAULT_MODULES[getCurrentModuleIndex()]?.name);
-            return;
-            
-          case 'F2':
-            event.preventDefault();
-            event.stopPropagation();
-            showKeyFeedback('Ctrl+F2');
-            console.log('Ctrl+F2 Search - Not yet implemented');
-            return;
-            
-          case 'F3':
-            event.preventDefault();
-            event.stopPropagation();
-            navigateToNextModule();
-            return;
-            
-          case 'F4':
-            event.preventDefault();
-            event.stopPropagation();
-            showKeyFeedback('Ctrl+F4');
-            console.log('Ctrl+F4 Execute - Context action');
-            return;
-            
-          case 'F5':
-            event.preventDefault();
-            event.stopPropagation();
-            showKeyFeedback('Ctrl+F5');
-            window.location.reload();
-            return;
-            
-          case 'F6':
-            event.preventDefault();
-            event.stopPropagation();
-            showKeyFeedback('Ctrl+F6');
-            console.log('Ctrl+F6 Save - Not yet implemented');
-            return;
-            
-          case 'F7':
-            event.preventDefault();
-            event.stopPropagation();
-            showKeyFeedback('Ctrl+F7');
-            console.log('Ctrl+F7 Filter - Not yet implemented');
-            return;
-            
-          case 'F8':
-            event.preventDefault();
-            event.stopPropagation();
-            showKeyFeedback('Ctrl+F8');
-            console.log('Ctrl+F8 Observer Status - Not yet implemented');
-            return;
-            
-          case 'F9':
-            event.preventDefault();
-            event.stopPropagation();
-            showKeyFeedback('Ctrl+F9');
-            console.log('Ctrl+F9 Command Terminal - Not yet implemented');
-            return;
-            
-          case 'F10':
-            event.preventDefault();
-            event.stopPropagation();
-            showKeyFeedback('Ctrl+F10');
-            console.log('Ctrl+F10 Emergency - Not yet implemented');
-            return;
-        }
-      }
-
-      // FALLBACK: Try regular function keys (Chrome/Edge work better)
-      const functionKeys = ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12'];
-      
-      if (functionKeys.includes(event.key) && !event.ctrlKey && !event.altKey && !event.shiftKey) {
         event.preventDefault();
         event.stopPropagation();
-        
-        switch (event.key) {
-          case 'F3':
-            navigateToNextModule();
-            return;
-          case 'F1':
-            showKeyFeedback('F1');
-            console.log('F1 Help - Current module:', VAULT_MODULES[getCurrentModuleIndex()]?.name);
-            return;
-          case 'F5':
-            showKeyFeedback('F5');
-            window.location.reload();
-            return;
-        }
+        console.log(`Ctrl+${number} pressed - jumping to module ${number}`);
+        navigateToModule(number - 1);
+        return;
       }
 
-      // Alt + Number - Alternative direct module jumping
-      if (event.altKey && !event.ctrlKey && !event.shiftKey) {
+      // Simple F3 for module cycling (fallback)
+      if (event.key === 'F3' && !event.ctrlKey && !event.altKey && !event.shiftKey) {
+        event.preventDefault();
+        event.stopPropagation();
+        console.log('F3 pressed - cycling modules');
+        navigateToNextModule();
+        return;
+      }
+
+      // Simple help test
+      if (event.key === 'F1' && !event.ctrlKey && !event.altKey && !event.shiftKey) {
+        event.preventDefault();
+        event.stopPropagation();
+        showKeyFeedback('F1');
+        console.log('F1 Help pressed');
+        return;
+      }
+
+      // Alt + Number - Alternative direct module jumping  
+      if (event.altKey && !event.ctrlKey && !event.shiftKey && /^[1-6]$/.test(event.key)) {
         const number = parseInt(event.key);
-        if (number >= 1 && number <= 6) {
-          event.preventDefault();
-          event.stopPropagation();
-          navigateToModule(number - 1);
-          return;
-        }
+        event.preventDefault();
+        event.stopPropagation();
+        console.log(`Alt+${number} pressed - jumping to module ${number}`);
+        navigateToModule(number - 1);
+        return;
       }
     };
 
