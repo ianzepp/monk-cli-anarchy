@@ -88,6 +88,22 @@ export const useKeyboardNavigation = () => {
         navigateToModule(0);
         return;
       }
+
+      // ONLY SAFE Ctrl+F key that we've confirmed works
+      if (event.key === 'F3' && event.ctrlKey && !event.altKey && !event.shiftKey) {
+        event.preventDefault();
+        event.stopPropagation();
+        console.log('Ctrl+F3 - Module cycling (CONFIRMED SAFE!)');
+        showKeyFeedback('Ctrl+F3');
+        navigateToNextModule();
+        return;
+      }
+      
+      // DO NOT ADD OTHER Ctrl+F* KEYS - they have dangerous browser behaviors:
+      // Ctrl+F4 = Close tab (DANGEROUS!)
+      // Ctrl+F5 = Hard refresh  
+      // Ctrl+F6 = Switch between frames
+      // etc.
     };
 
     document.addEventListener('keydown', handleKeyDown);

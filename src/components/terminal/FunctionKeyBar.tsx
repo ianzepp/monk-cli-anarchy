@@ -84,11 +84,11 @@ export const FunctionKeyBar: React.FC<FunctionKeyBarProps> = ({ position }) => {
   ];
 
   const bottomKeys = [
-    { key: 'Working Keys Only', label: 'Browser Safe Mode' },
-    { key: 'Use ` or ~', label: 'Module Cycling' },
-    { key: 'Alt+1 Only', label: 'Direct Access' },
-    { key: 'ESC', label: 'Return Home' },
-    { key: 'Test Buttons', label: 'Mouse Navigation' },
+    { key: 'Ctrl+F3', label: 'Next Module ✓' },
+    { key: 'Browser Limits', label: 'Most Ctrl+F* Broken' },
+    { key: 'Use Primary', label: 'Backtick & Tilde' },
+    { key: 'Alt+1 Works', label: 'Home Only' },
+    { key: 'ESC Always', label: 'Safe Return' },
   ];
 
   const keys = position === 'top' ? topKeys : bottomKeys;
