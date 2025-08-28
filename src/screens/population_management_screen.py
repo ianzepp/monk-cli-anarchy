@@ -7,7 +7,7 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal, Vertical
 from textual.screen import Screen
-from textual.widgets import Button, DataTable, Footer, Header, Input, Label, Static, TextArea
+from textual.widgets import Button, DataTable, Footer, Header, Input, Label, Select, Static, TextArea
 
 from widgets.vault_container import VaultContainer
 from models.vault_data import vault_data
@@ -128,59 +128,27 @@ class PopulationManagementScreen(Screen):
         
         # Statistics bar with dynamic data
         with Container(classes="stats-bar"):
-            yield Label("Population: Loading... | Active Filters: None | Selected: 0 records", id="population_stats")
+            yield Label("Population: Loading... | Schema: personnel_records | Selected: 0 records", id="population_stats")
             
-        # Advanced search console
-        with Container(classes="search-section") as container:
-            container.border_title = "ADVANCED SEARCH CONSOLE"
-            
-            with Vertical():
-                # Schema selection and filter input
-                with Horizontal():
-                    yield Label("Schema:", classes="field-label")
-                    yield Input(
-                        value=self.current_schema,
-                        placeholder="personnel_records",
-                        id="schema_input",
-                        classes="schema-select"
-                    )
-                    yield Label("Filter:", classes="field-label")
-                    yield Input(
-                        placeholder='{"security_level": "OFFICER"}',
-                        id="filter_input",
-                        classes="filter-input"
-                    )
-                    
-                # Visual filter builder
-                yield Label("QUICK FILTERS:", classes="field-label")
-                with Horizontal():
-                    yield Button("●ACTIVE", variant="default", id="filter_active")
-                    yield Button("⚠INJURED", variant="default", id="filter_injured") 
-                    yield Button("◐OFFLINE", variant="default", id="filter_offline")
-                    yield Button("👑OFFICERS", variant="default", id="filter_officers")
-                    yield Button("🔒SECURITY", variant="default", id="filter_security")
-                    yield Button("📻RADIO", variant="default", id="filter_radio")
-                    yield Button("🏠ALL", variant="primary", id="filter_all")
-                
-        # Search results table
+        # Record list (main interface - not search)
         with Container(classes="results-section") as container:
-            container.border_title = "SEARCH RESULTS"
+            container.border_title = "PERSONNEL RECORDS"
             
             # Population records table
             table = DataTable(id="population_table")
-            table.add_columns("☐", "ID", "NAME", "SECTION", "STATUS", "LAST_SEEN")
+            table.add_columns("☐", "ID", "NAME", "DEPARTMENT", "STATUS", "MODIFIED")
             yield table
 
         # Selection info and action buttons
         with Container(classes="action-bar"):
             yield Label("Selected: 0 records", id="selection_info", classes="selection-info")
             with Horizontal(classes="action-buttons"):
-                yield Button("[f] FIND", variant="default", id="find_btn")
-                yield Button("[c] CREATE", variant="primary", id="create_btn")
+                yield Button("[f] FIND/FILTER", variant="primary", id="find_btn")
+                yield Button("[c] CREATE", variant="default", id="create_btn")
                 yield Button("[d] DELETE", variant="default", id="delete_btn")
                 yield Button("[u] UPDATE", variant="default", id="update_btn")
-                yield Button("[s] SEARCH", variant="default", id="search_btn")
-                yield Button("[x] CLEAR", variant="default", id="clear_btn")
+                yield Button("[r] REFRESH", variant="default", id="refresh_btn")
+                yield Button("[x] EXPORT", variant="default", id="export_btn")
                 
         yield Footer()
 
@@ -261,8 +229,9 @@ class PopulationManagementScreen(Screen):
         self.app.pop_screen()
         
     def action_find_records(self) -> None:
-        """Find/Filter records - focus filter input"""
-        self.query_one("#filter_input", Input).focus()
+        """Open advanced filter/search interface"""
+        from screens.filter_builder_screen import FilterBuilderScreen
+        self.app.push_screen(FilterBuilderScreen(self.current_schema))
         
     def action_create_record(self) -> None:
         """Create new population record"""
@@ -279,7 +248,7 @@ class PopulationManagementScreen(Screen):
             
     def action_execute_search(self) -> None:
         """Execute search with current filters"""
-        schema = self.query_one("#schema_input", Input).value.strip()
+        schema = self.query_one("#schema_select", Select).value
         filter_text = self.query_one("#filter_input", Input).value.strip()
         
         if not schema:

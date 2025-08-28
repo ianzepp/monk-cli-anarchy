@@ -146,8 +146,8 @@ class MonkClient:
     # Tenant Management Commands
     
     def tenant_list(self) -> MonkCommandResult:
-        """Execute: monk tenant list"""
-        return self._execute_command(["tenant", "list"])
+        """Execute: monk tenant list --json"""
+        return self._execute_command(["tenant", "list", "--json"])
     
     def tenant_create(self, name: str) -> MonkCommandResult:
         """Execute: monk tenant create <name>"""

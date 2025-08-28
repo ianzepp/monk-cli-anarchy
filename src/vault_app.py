@@ -25,6 +25,7 @@ class VaultApp(App):
     BINDINGS = [
         Binding("q", "quit", "Quit", priority=True, show=True),
         Binding("h", "help", "Help", show=True),
+        Binding("?", "ai_assistant", "AI Assistant", priority=True, show=True),
         Binding("ctrl+c", "quit", "Quit", priority=True),
     ]
 
@@ -42,13 +43,19 @@ class VaultApp(App):
 
     def on_mount(self) -> None:
         """Application startup"""
-        # Start with authentication screen
-        self.push_screen(AuthScreen())
+        # Start with new three-step authentication flow
+        from screens.server_selection_screen import ServerSelectionScreen
+        self.push_screen(ServerSelectionScreen())
 
     def action_help(self) -> None:
         """Show help documentation"""
         self.bell()
         # TODO: Implement help system
+
+    def action_ai_assistant(self) -> None:
+        """Open global AI assistant"""
+        from screens.ai_assistant_screen import AIAssistantScreen
+        self.push_screen(AIAssistantScreen())
 
     def action_quit(self) -> None:
         """Quit the application"""

@@ -23,6 +23,10 @@ reset_terminal
 echo "Starting Vault-Tec Enterprise Suite..."
 echo "Activating virtual environment..."
 
+# Set development monk executable path
+export MONK_EXECUTABLE="/Users/ianzepp/Workspaces/monk-cli/monk"
+echo "Using monk executable: $MONK_EXECUTABLE"
+
 # Check if virtual environment exists
 if [ ! -d "venv" ]; then
     echo "Error: Virtual environment not found. Please run:"
