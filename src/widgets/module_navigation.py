@@ -24,11 +24,12 @@ class ModuleNavigation(Widget):
         border: solid #00ff00;
         border-title-color: #ffb000;
         border-title-style: bold;
+        padding: 0 2;
     }
     
     .module-grid {
         grid-size: 1 6;
-        margin: 1;
+        margin: 1 0;
         height: 6;
     }
     

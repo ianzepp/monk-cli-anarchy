@@ -16,6 +16,8 @@ from widgets.alert_panel import AlertPanel
 from widgets.activity_log import ActivityLog
 from widgets.module_navigation import ModuleNavigation
 from models.vault_data import vault_data
+from api.monk_client import monk
+from utils.session_timer import SessionTimer
 import random
 
 
@@ -48,12 +50,12 @@ class OverseerScreen(Screen):
         margin: 1 2;
     }
     
-    .activity-section {
+    ActivityLog {
         height: 12;
         margin: 1 2;
     }
     
-    .modules-section {
+    ModuleNavigation {
         height: 10;
         margin: 1 2;
     }
@@ -87,6 +89,7 @@ class OverseerScreen(Screen):
     def __init__(self):
         super().__init__()
         self.refresh_timer = None
+        self.session_timer = None
 
     def compose(self) -> ComposeResult:
         """Build the overseer console interface"""
@@ -95,9 +98,10 @@ class OverseerScreen(Screen):
             with Horizontal():
                 yield Label(
                     f"▼ OVERSEER: {self.app.current_user}@{self.app.current_vault} ▼",
-                    classes="user-info"
+                    classes="user-info", 
+                    id="user_info_label"
                 )
-                yield Label("Session: 23h 45m remaining", classes="session-info")
+                yield Label("Session: Loading...", classes="session-info", id="session_info_label")
         
         # System status panels
         with Horizontal(classes="dashboard-panels"):
@@ -106,12 +110,10 @@ class OverseerScreen(Screen):
             yield AlertPanel()
             
         # Activity log
-        with Container(classes="activity-section"):
-            yield ActivityLog()
+        yield ActivityLog()
             
         # Module navigation
-        with Container(classes="modules-section"):
-            yield ModuleNavigation()
+        yield ModuleNavigation()
             
         # Command hints
         with Container(classes="command-bar"):
@@ -126,15 +128,20 @@ class OverseerScreen(Screen):
         """Start refresh timer and initial data load"""
         self.start_refresh_timer()
         self.refresh_dashboard()
+        self.update_auth_context()
         
     def on_unmount(self) -> None:
-        """Clean up timer when screen is removed"""
+        """Clean up timers when screen is removed"""
         if self.refresh_timer:
             self.refresh_timer.stop()
+        if self.session_timer:
+            self.session_timer.stop()
 
     def start_refresh_timer(self) -> None:
-        """Start automatic dashboard refresh"""
+        """Start automatic dashboard refresh and session countdown"""
         self.refresh_timer = self.set_interval(30, self.refresh_dashboard)
+        # Update session countdown every 10 seconds
+        self.session_timer = self.set_interval(10, self.update_session_countdown)
 
     def refresh_dashboard(self) -> None:
         """Refresh dashboard data"""
@@ -176,15 +183,55 @@ class OverseerScreen(Screen):
         except:
             pass
 
+    def update_auth_context(self) -> None:
+        """Update user and session info from real monk auth data"""
+        try:
+            # Get current auth info
+            info_result = monk.auth_info()
+            if info_result.success and isinstance(info_result.data, dict):
+                auth_info = info_result.data
+                
+                # Update user info label
+                tenant = auth_info.get("tenant", self.app.current_vault)
+                username = auth_info.get("name", self.app.current_user) 
+                user_label = self.query_one("#user_info_label", Label)
+                user_label.update(f"▼ OVERSEER: {username}@{tenant} ▼")
+                
+                # Get live session countdown
+                expires_result = monk.auth_expires()
+                if expires_result.success:
+                    session_display = SessionTimer.get_session_display(expires_result.data)
+                    session_label = self.query_one("#session_info_label", Label)
+                    session_label.update(session_display)
+                
+                # Update app context with real data
+                self.app.current_user = username
+                self.app.current_vault = tenant
+                
+        except Exception as e:
+            # Fallback to existing app data
+            pass
+            
+    def update_session_countdown(self) -> None:
+        """Update the live session countdown"""
+        try:
+            expires_result = monk.auth_expires()
+            if expires_result.success:
+                session_display = SessionTimer.get_session_display(expires_result.data)
+                session_label = self.query_one("#session_info_label", Label)
+                session_label.update(session_display)
+        except Exception:
+            pass
+
     def action_module_1(self) -> None:
         """Navigate to Department Registry"""
-        self.app.bell()
-        # TODO: Implement navigation to department registry screen
+        from screens.department_registry_screen import DepartmentRegistryScreen
+        self.app.push_screen(DepartmentRegistryScreen())
         
     def action_module_2(self) -> None:
         """Navigate to Schema Laboratory"""
-        self.app.bell()
-        # TODO: Implement navigation to schema lab screen
+        from screens.schema_lab_screen import SchemaLabScreen
+        self.app.push_screen(SchemaLabScreen())
         
     def action_module_3(self) -> None:
         """Navigate to Population Management"""

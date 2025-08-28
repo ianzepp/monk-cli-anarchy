@@ -16,6 +16,9 @@ class VaultConfig:
         self.api_base_url = os.getenv("MONK_API_URL", "http://localhost:9001")
         self.default_tenant = os.getenv("DEFAULT_TENANT", "test-1756112139")
         self.default_username = os.getenv("DEFAULT_USERNAME", "root")
+        
+        # Monk CLI executable path
+        self.monk_executable = os.getenv("MONK_EXECUTABLE", "monk")  # Default to global binary
     
     def _get_bool_env(self, key: str, default: bool = False) -> bool:
         """Get boolean environment variable"""

@@ -187,6 +187,51 @@ class VaultDataGenerator:
             }
             return operations.get(action, f"System {action.lower()}")
 
+    def generate_schema_registry_data(self) -> List[Dict[str, Any]]:
+        """Generate mock schema registry data"""
+        schemas = []
+        
+        for i, name in enumerate(self.SCHEMA_NAMES):
+            status_options = ["●DEPLOYED", "⚠TESTING", "○DRAFT"]
+            status_weights = [0.6, 0.25, 0.15]
+            status = random.choices(status_options, weights=status_weights)[0]
+            
+            # Generate realistic version numbers
+            major = random.randint(1, 3)
+            minor = random.randint(0, 5)  
+            patch = random.randint(0, 15)
+            version = f"v{major}.{minor}.{patch}"
+            
+            # Generate record counts based on status
+            if status == "●DEPLOYED":
+                records = random.randint(100, 50000)
+            elif status == "⚠TESTING":
+                records = random.randint(10, 5000)
+            else:  # DRAFT
+                records = 0
+                
+            # Actions based on status
+            if status == "●DEPLOYED":
+                actions = "[E][D]"  # Edit, Deploy
+            elif status == "⚠TESTING":
+                actions = "[E][T]"  # Edit, Test
+            else:  # DRAFT
+                actions = "[E][X]"  # Edit, Delete
+            
+            schemas.append({
+                "name": name,
+                "version": version,
+                "records": f"{records:,}" if records > 0 else "0",
+                "status": status,
+                "actions": actions,
+                "record_count": records,
+                "last_modified": self.start_time + timedelta(days=random.randint(0, 30))
+            })
+            
+        # Sort by record count (most used first)
+        schemas.sort(key=lambda x: x["record_count"], reverse=True)
+        return schemas
+
     def generate_dashboard_data(self) -> Dict[str, Any]:
         """Generate complete dashboard data set"""
         return {

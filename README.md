@@ -1,20 +1,41 @@
-# VAULT-TEC ENTERPRISE SUITE™
+# MONK CLI ANARCHY
+
+*"Rebelling against boring command-line interfaces since 2287"*
+
+**VAULT-TEC ENTERPRISE SUITE™** - A Fallout-themed terminal user interface for monk-cli, built with Python Textual.
 
 *"Building Tomorrow's Business Solutions... Yesterday's Way"*
-
-A Fallout-themed terminal user interface for the Monk API, built with Python Textual.
 
 ## Quick Start
 
 1. **Install dependencies:**
    ```bash
-   pip install -r requirements.txt
+   python3 -m venv venv
+   source venv/bin/activate
+   python3 -m pip install -r requirements.txt
    ```
 
 2. **Run the application:**
    ```bash
-   python main.py
+   ./run.sh
    ```
+
+## Configuration
+
+Set environment variables to customize behavior:
+
+```bash
+# For development (point to local monk-cli build)
+export MONK_EXECUTABLE="/Users/ianzepp/Workspaces/monk-cli/monk"
+
+# For production (use global monk binary)
+export MONK_EXECUTABLE="monk"
+
+# Other configuration options
+export OVERSEER_ALWAYS=true          # Auto-authenticate in dev mode
+export DEFAULT_TENANT="test-1756112139"  # Default vault identifier
+export DEFAULT_USERNAME="root"       # Default username
+```
 
 ## Project Structure
 

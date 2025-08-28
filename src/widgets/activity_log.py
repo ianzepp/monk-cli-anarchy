@@ -26,10 +26,11 @@ class ActivityLog(Widget):
         border: solid #00ff00;
         border-title-color: #ffb000;
         border-title-style: bold;
+        padding: 0 2;
     }
     
     .activity-entry {
-        margin: 0 1;
+        margin: 0 0;
         height: 1;
     }
     
