@@ -23,10 +23,8 @@ class VaultApp(App):
     CSS = VAULT_CSS
     
     BINDINGS = [
-        Binding("q", "quit", "Quit", priority=True, show=True),
-        Binding("h", "help", "Help", show=True),
-        Binding("?", "ai_assistant", "AI Assistant", priority=True, show=True),
-        Binding("ctrl+c", "quit", "Quit", priority=True),
+        # App-level bindings are hidden - screens handle their own display
+        Binding("ctrl+c", "quit", "Quit", priority=True, show=False),
     ]
 
     def __init__(self):

@@ -10,52 +10,31 @@ from textual.screen import Screen
 from textual.widgets import Button, DataTable, Input, Label, Static
 
 from widgets.vault_container import VaultContainer
+from screens.base_screen import BaseVaultScreen
 from api.monk_client import monk
 
 
-class SessionSelectionScreen(Screen):
+class SessionSelectionScreen(BaseVaultScreen):
     """Step 3: Select authentication session"""
     
     CSS = """
-    .centering-container {
-        width: 100%;
-        height: 100%;
-        align: center middle;
-    }
-    
-    .session-container {
-        width: 80;
-        height: auto;
-        max-height: 85%;
-        border: solid #00ff00;
-        border-title-color: #ffb000;
-        border-title-style: bold;
-        overflow-y: auto;
-        padding: 0 2;
-    }
-    
     .step-indicator {
-        color: #ffb000;
         text-style: bold;
         text-align: center;
         margin: 1 0;
     }
     
     .connection-info {
-        color: #22c55e;
         text-align: center;
         margin: 1 0;
     }
     
     .auth-section {
-        background: #1a1a1a;
-        margin: 1 0;
+        margin: 2 0;
         padding: 1;
-        height: 8;
     }
     
     .field-label {
-        color: #00ff00;
         margin: 1 0 0 0;
     }
     
@@ -63,27 +42,12 @@ class SessionSelectionScreen(Screen):
         margin: 0 0 1 0;
         width: 100%;
     }
-    
-    .action-buttons {
-        height: 3;
-        margin: 2 0;
-        align: center middle;
-    }
-    
-    .status-message {
-        height: 1;
-        margin: 1 0;
-        text-align: center;
-        color: #ffb000;
-    }
     """
     
-    BINDINGS = [
+    BINDINGS = BaseVaultScreen.BINDINGS + [
         Binding("escape", "back_to_tenants", "Back", show=True),
         Binding("enter", "authenticate", "Authenticate", show=True),
         Binding("s", "use_existing", "Use Existing", show=True),
-        Binding("left", "focus_previous", "◀", show=False),
-        Binding("right", "focus_next", "▶", show=False),
     ]
 
     def __init__(self, server_name: str, tenant_name: str):
@@ -92,57 +56,48 @@ class SessionSelectionScreen(Screen):
         self.tenant_name = tenant_name
         self.existing_session = None
 
-    def compose(self) -> ComposeResult:
-        """Build the session selection interface"""
-        with Container(classes="centering-container"):
-            with Container(classes="session-container") as container:
-                container.border_title = "VAULT ACCESS SESSION SELECTION"
+    def compose_content(self) -> ComposeResult:
+        """Define session selection content"""
+        with Vertical():
+            yield Label("STEP 3 of 3: Vault Access Authentication", classes="step-indicator amber-alert-text")
+            
+            yield Static(
+                '"Security clearance protocols ensure only authorized personnel access vault facilities."',
+                classes="connection-info steel-blue-text"
+            )
+            
+            yield Label(f"Server: {self.server_name} • Tenant: {self.tenant_name}", classes="connection-info healthy-green-text")
+            yield Static("", id="session_status", classes="connection-info")
+            
+            # Authentication form
+            with Container(classes="auth-section"):
+                yield Label("Username:", classes="field-label vault-green-text")
+                yield Input(
+                    value="root",
+                    id="username_input",
+                    classes="field-input"
+                )
                 
-                with Vertical():
-                    yield Label("STEP 3 of 3: Vault Access Authentication", classes="step-indicator")
-                    
-                    yield Static(
-                        '"Security clearance protocols ensure only authorized personnel access vault facilities."',
-                        classes="connection-info"
-                    )
-                    
-                    # Server and tenant info (read-only, already selected)
-                    yield Label(f"Server: {self.server_name}", classes="field-label", id="server_info")
-                    yield Label(f"Tenant: {self.tenant_name}", classes="field-label", id="tenant_info") 
-                    yield Label("", id="session_status", classes="connection-info")
-                    
-                    # Authentication form (similar to original)
-                    yield Label("Username:", classes="field-label")
-                    yield Input(
-                        value="root",
-                        id="username_input",
-                        classes="field-input"
-                    )
-                    
-                    yield Label("Password:", classes="field-label")
-                    yield Input(
-                        password=True,
-                        placeholder="Security key required",
-                        id="password_input",
-                        classes="field-input"
-                    )
-                    
-                    # Status message
-                    yield Static("Ready for authentication", id="status_message", classes="status-message")
-                    
-                    # Action buttons with killbox notation
-                    with Horizontal(classes="action-buttons"):
-                        yield Button("[ENTER] AUTHENTICATE", variant="primary", id="auth_btn")
-                        yield Button("[s] USE EXISTING", variant="default", id="existing_btn")
-                        yield Button("[ESC] BACK", variant="default", id="back_btn")
+                yield Label("Password:", classes="field-label vault-green-text")
+                yield Input(
+                    password=True,
+                    placeholder="Security key required",
+                    id="password_input",
+                    classes="field-input"
+                )
+                
+    def compose_status(self) -> str:
+        """Define default status message"""
+        return "Ready for authentication"
 
     def on_mount(self) -> None:
         """Check for existing authentication on startup"""
+        super().on_mount()
         self.check_existing_session()
 
     def check_existing_session(self) -> None:
         """Check if user is already authenticated for this tenant"""
-        self.update_status("Checking for existing authentication...")
+        self.status_update("Checking for existing authentication...")
         
         # Check auth status
         status_result = monk.auth_status()
@@ -172,14 +127,14 @@ class SessionSelectionScreen(Screen):
                                 "vault_id": current_tenant,
                                 "server": self.server_name
                             }
-                            self.update_status("Using existing authenticated session...")
+                            self.status_update("Using existing authenticated session...")
                             self.set_timer(2.0, lambda: self.proceed_to_vault(user_data))
                             return
         
         # No existing session
         session_widget = self.query_one("#session_status", Static) 
         session_widget.update("⚠ No existing session - authentication required")
-        self.update_status("Enter username and password to authenticate")
+        self.status_update("Enter username and password to authenticate")
         self.query_one("#username_input", Input).focus()
 
     def update_status(self, message: str) -> None:
@@ -201,7 +156,7 @@ class SessionSelectionScreen(Screen):
             }
             self.proceed_to_vault(user_data)
         else:
-            self.update_status("No existing session available")
+            self.status_update("No existing session available")
             self.app.bell()
             
     def action_authenticate(self) -> None:
@@ -210,21 +165,21 @@ class SessionSelectionScreen(Screen):
         password = self.query_one("#password_input", Input).value.strip()
         
         if not username:
-            self.update_status("Username required")
+            self.status_update("Username required")
             self.query_one("#username_input", Input).focus()
             return
             
         if not password:
-            self.update_status("Password required")
+            self.status_update("Password required")
             self.query_one("#password_input", Input).focus()
             return
             
         # Authenticate via monk CLI
-        self.update_status("Authenticating...")
+        self.status_update("Authenticating...")
         auth_result = monk.auth_login(self.tenant_name, username, password)
         
         if auth_result.success:
-            self.update_status("✅ Authentication successful")
+            self.status_update("✅ Authentication successful")
             user_data = {
                 "username": username,
                 "vault_id": self.tenant_name,
@@ -233,7 +188,7 @@ class SessionSelectionScreen(Screen):
             self.proceed_to_vault(user_data)
         else:
             error_msg = auth_result.error or "Authentication failed"
-            self.update_status(f"❌ Authentication failed: {error_msg}")
+            self.status_update(f"❌ Authentication failed: {error_msg}")
             self.query_one("#password_input", Input).focus()
 
     def proceed_to_vault(self, user_data: dict) -> None:

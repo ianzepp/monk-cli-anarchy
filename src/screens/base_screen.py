@@ -16,8 +16,8 @@ class BaseVaultScreen(Screen):
     
     # Global killbox bindings available on all screens
     BINDINGS = [
-        Binding("?", "ai_assistant", "AI Assistant", priority=True, show=False),
-        Binding("q", "quit_vault", "Quit", priority=True, show=False),
+        Binding("?", "ai_assistant", "AI Assistant", priority=True, show=True),
+        Binding("q", "quit_vault", "Quit", priority=True, show=True),
     ]
 
     def __init__(self, **kwargs):
@@ -142,5 +142,6 @@ class BaseVaultScreen(Screen):
         self.app.push_screen(AIAssistantScreen())
 
     def action_quit_vault(self) -> None:
-        """Quit the application"""
-        self.app.exit()
+        """Show quit confirmation screen"""
+        from screens.quit_confirmation_screen import QuitConfirmationScreen
+        self.app.push_screen(QuitConfirmationScreen())

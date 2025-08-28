@@ -8,83 +8,47 @@ from textual.binding import Binding
 from textual.containers import Container, Horizontal, Vertical
 from textual.screen import Screen
 from textual.widgets import Button, DataTable, Label, Static
+from typing import Dict, Any
 
 from widgets.vault_container import VaultContainer
+from widgets.killbox_table import KillboxTable
+from screens.base_screen import BaseVaultScreen
 from api.monk_client import monk
 
 
-class TenantSelectionScreen(Screen):
+class TenantSelectionScreen(BaseVaultScreen):
     """Step 2: Select tenant database"""
     
     CSS = """
-    .centering-container {
-        width: 100%;
-        height: 100%;
-        align: center middle;
-    }
-    
-    .tenant-container {
-        width: 80;
-        height: auto;
-        max-height: 85%;
-        border: solid #00ff00;
-        border-title-color: #ffb000;
-        border-title-style: bold;
-        overflow-y: auto;
-        padding: 0 2;
-    }
-    
     .step-indicator {
-        color: #ffb000;
         text-style: bold;
         text-align: center;
         margin: 1 0;
     }
     
     .server-info {
-        color: #22c55e;
         text-align: center;
         margin: 1 0;
     }
     
-    .tenant-table {
-        height: 12;
-        margin: 1 0;
-    }
-    
-    .tenant-table:focus-within {
-        border: solid #ffb000;
-        border-title-color: #ff3030;
-    }
-    
-    .action-buttons {
-        height: 3;
+    .tenant-list {
         margin: 2 0;
-        align: center middle;
-    }
-    
-    .status-message {
-        height: 1;
-        margin: 1 0;
-        text-align: center;
-        color: #ffb000;
+        width: 100%;
     }
     """
     
-    BINDINGS = [
+    BINDINGS = BaseVaultScreen.BINDINGS + [
         Binding("escape", "back_to_servers", "Back", show=True),
-        Binding("c", "create_tenant", "Create Tenant", show=True),
-        Binding("1", "select_tenant_1", "[1]", show=True),
-        Binding("2", "select_tenant_2", "[2]", show=True),
-        Binding("3", "select_tenant_3", "[3]", show=True),
-        Binding("4", "select_tenant_4", "[4]", show=True),
-        Binding("5", "select_tenant_5", "[5]", show=True),
-        Binding("6", "select_tenant_6", "[6]", show=True),
-        Binding("7", "select_tenant_7", "[7]", show=True),
-        Binding("8", "select_tenant_8", "[8]", show=True),
-        Binding("9", "select_tenant_9", "[9]", show=True),
-        Binding("left", "focus_previous", "◀", show=False),
-        Binding("right", "focus_next", "▶", show=False),
+        Binding("c", "create_tenant", "Create", show=True),
+        Binding("1", "select_tenant_1", "Select", show=True),
+        Binding("2", "select_tenant_2", "\u200b", show=False),
+        Binding("3", "select_tenant_3", "\u200b", show=False),
+        Binding("4", "select_tenant_4", "\u200b", show=False),
+        Binding("5", "select_tenant_5", "\u200b", show=False),
+        Binding("6", "select_tenant_6", "\u200b", show=False),
+        Binding("7", "select_tenant_7", "\u200b", show=False),
+        Binding("8", "select_tenant_8", "\u200b", show=False),
+        Binding("9", "select_tenant_9", "\u200b", show=False),
     ]
 
     def __init__(self, server_name: str):
@@ -93,35 +57,42 @@ class TenantSelectionScreen(Screen):
         self.tenants_data = []
         self.selected_tenant = None
 
-    def compose(self) -> ComposeResult:
-        """Build the tenant selection interface"""
-        with Container(classes="centering-container"):
-            with Container(classes="tenant-container") as container:
-                container.border_title = "VAULT DATABASE TENANT SELECTION"
-                
-                with Vertical():
-                    yield Label("STEP 2 of 3: Choose Tenant Database", classes="step-indicator")
-                    yield Label(f"Server: {self.server_name}", classes="server-info")
-                    
-                    # Tenant selection list with killboxes
-                    with Container(classes="tenant-table"):
-                        yield Static("", id="tenant_list")
-                    
-                    # Status message
-                    yield Static("Select a tenant database to access", id="status_message", classes="status-message")
-                    
-                    # Action buttons with killbox notation
-                    with Horizontal(classes="action-buttons"):
-                        yield Button("[c] CREATE TENANT", variant="primary", id="create_btn")
-                        yield Button("[ESC] BACK TO SERVERS", variant="default", id="back_btn")
+    def compose_content(self) -> ComposeResult:
+        """Define tenant selection content"""
+        with Vertical():
+            yield Label("STEP 2 of 3: Choose Tenant Database", classes="step-indicator amber-alert-text")
+            yield Label(f"Server: {self.server_name}", classes="server-info healthy-green-text")
+            
+            # Tenant selection table with killboxes
+            table = DataTable(id="tenant_table", classes="tenant-list")
+            table.add_columns("", "NAME", "DISPLAY_NAME", "AUTH_STATUS")
+            table.show_header = False
+            table.cursor_type = "row"
+            table.can_focus = True
+            yield table
+            
+    def compose_status(self) -> str:
+        """Define default status message"""
+        return "Select a tenant database to access"
 
     def on_mount(self) -> None:
         """Load tenant data on startup"""
+        super().on_mount()
         self.load_tenants()
+        # Focus the table so arrow keys and Enter work
+        self.call_later(self.focus_table)
+        
+    def focus_table(self) -> None:
+        """Focus the tenant table for navigation"""
+        try:
+            table = self.query_one("#tenant_table", DataTable)
+            table.focus()
+        except:
+            pass
 
     def load_tenants(self) -> None:
         """Load tenant list from monk CLI"""
-        self.update_status("Loading available tenant databases...")
+        self.status_update("Loading available tenant databases...")
         
         # Use real monk tenant list --json command
         result = monk.tenant_list()
@@ -130,27 +101,27 @@ class TenantSelectionScreen(Screen):
             self.tenants_data = tenants
             
             if not tenants:
-                self.update_status("No tenants configured. Use [c] CREATE TENANT to add one.")
+                self.status_update("No tenants configured. Use [c] CREATE TENANT to add one.")
                 return
                 
             self.populate_tenant_table()
-            self.update_status(f"Found {len(tenants)} tenant databases. Press [1-9] to select.")
+            self.status_update(f"Found {len(tenants)} tenant databases for server '{self.server_name}'. Press [1-{len(tenants)}] to select.")
         else:
             # No demo data - show proper error
             self.tenants_data = []
             self.populate_tenant_table()  # Shows "No tenants available"
             error_msg = result.error if result.error else "monk CLI unavailable"
-            self.update_status(f"⚠ Tenant registry not found! {error_msg}. Use [c] CREATE TENANT to configure databases.")
+            self.status_update(f"⚠ Tenant registry not found! {error_msg}. Use [c] CREATE TENANT.")
 
     def populate_tenant_table(self) -> None:
-        """Populate tenant list with killbox notation"""
-        tenant_list = self.query_one("#tenant_list", Static)
+        """Populate tenant table with killbox notation"""
+        table = self.query_one("#tenant_table", DataTable)
+        table.clear()
         
         if not self.tenants_data:
-            tenant_list.update("No tenants available.")
+            table.add_row("", "No tenants available.", "", "")
             return
             
-        lines = []
         for i, tenant in enumerate(self.tenants_data[:9]):  # Max 9 tenants
             name = tenant.get("name", "unknown")
             display_name = tenant.get("display_name", name)
@@ -158,14 +129,18 @@ class TenantSelectionScreen(Screen):
             current_marker = " *" if tenant.get("is_current", False) else ""
             
             killbox = f"[{i+1}]"
-            line = f"{killbox} {name:15} {display_name:25} {authenticated:10}{current_marker}"
-            lines.append(line)
+            auth_status = f"{authenticated}{current_marker}"
             
-        tenant_list.update("\n".join(lines))
+            table.add_row(killbox, name, display_name, auth_status)
+        
+    def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
+        """Handle ENTER key or row selection in tenant table"""
+        if event.data_table.id == "tenant_table":
+            # Get the row that was selected
+            row_index = event.cursor_row
+            if 0 <= row_index < len(self.tenants_data):
+                self.select_tenant_by_index(row_index)
 
-    def update_status(self, message: str) -> None:
-        """Update status message"""
-        self.query_one("#status_message", Static).update(message)
 
     def action_back_to_servers(self) -> None:
         """Return to server selection"""
@@ -178,7 +153,7 @@ class TenantSelectionScreen(Screen):
             tenant_name = tenant_data["name"]
             
             # Switch to selected tenant
-            self.update_status(f"Switching to tenant: {tenant_name}")
+            self.status_update(f"Switching to tenant: {tenant_name}")
             switch_result = monk.tenant_use(tenant_name)
             
             if switch_result.success:
@@ -186,9 +161,9 @@ class TenantSelectionScreen(Screen):
                 from screens.session_selection_screen import SessionSelectionScreen
                 self.app.push_screen(SessionSelectionScreen(self.server_name, tenant_name))
             else:
-                self.update_status(f"Failed to switch tenant: {switch_result.error}")
+                self.status_update(f"Failed to switch tenant: {switch_result.error}")
         else:
-            self.update_status("Invalid tenant selection")
+            self.status_update("Invalid tenant selection")
 
     # Individual tenant selection methods
     def action_select_tenant_1(self) -> None: self.select_tenant_by_index(0)
@@ -208,7 +183,7 @@ class TenantSelectionScreen(Screen):
             tenant_name = tenant_data["name"]
             
             # Switch to selected tenant
-            self.update_status(f"Switching to tenant: {tenant_name}")
+            self.status_update(f"Switching to tenant: {tenant_name}")
             switch_result = monk.tenant_use(tenant_name)
             
             if switch_result.success:
@@ -216,9 +191,9 @@ class TenantSelectionScreen(Screen):
                 from screens.session_selection_screen import SessionSelectionScreen
                 self.app.push_screen(SessionSelectionScreen(self.server_name, tenant_name))
             else:
-                self.update_status(f"Failed to switch tenant: {switch_result.error}")
+                self.status_update(f"Failed to switch tenant: {switch_result.error}")
         else:
-            self.update_status("Invalid tenant selection")
+            self.status_update("Invalid tenant selection")
 
     # Individual tenant selection methods  
     def action_select_tenant_1(self) -> None: self.select_tenant_by_index(0)
@@ -235,11 +210,4 @@ class TenantSelectionScreen(Screen):
         """Create new tenant"""
         self.app.bell()
         # TODO: Implement tenant creation dialog
-        self.update_status("Tenant creation not yet implemented")
-
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        """Handle button press events"""
-        if event.button.id == "create_btn":
-            self.action_create_tenant()
-        elif event.button.id == "back_btn":
-            self.action_back_to_servers()
+        self.status_update("Tenant creation not yet implemented")

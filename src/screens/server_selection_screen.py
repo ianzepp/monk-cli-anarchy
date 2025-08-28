@@ -31,9 +31,9 @@ class ServerSelectionScreen(BaseVaultScreen):
     """
     
     BINDINGS = BaseVaultScreen.BINDINGS + [
-        Binding("escape", "back_to_welcome", "ESC Back", show=True),
+        Binding("escape", "back_to_welcome", "Back", show=True),
         Binding("c", "create_server", "Create", show=True),
-        Binding("1", "select_server_1", "1-9 Select", show=True),
+        Binding("1", "select_server_1", "1-3 Select", show=True),
         Binding("2", "select_server_2", "\u200b", show=False),
         Binding("3", "select_server_3", "\u200b", show=False),
         Binding("4", "select_server_4", "\u200b", show=False),
@@ -54,8 +54,13 @@ class ServerSelectionScreen(BaseVaultScreen):
         with Vertical():
             yield Label("STEP 1 of 3: Choose Server Connection", classes="step-indicator amber-alert-text")
             
-            # Server selection list with killboxes
-            yield Static("", id="server_list", classes="server-list vault-green-text")
+            # Server selection table with killboxes
+            table = DataTable(id="server_table", classes="server-list")
+            table.add_columns("", "NAME", "ENDPOINT", "STATUS", "SESSIONS")
+            table.show_header = False  # Hide column headers
+            table.cursor_type = "row"  # Enable row cursor
+            table.can_focus = True     # Make table focusable
+            yield table
                 
     def compose_commands(self) -> list[str]:
         """Define local killbox commands"""
@@ -69,6 +74,16 @@ class ServerSelectionScreen(BaseVaultScreen):
         """Load server data on startup"""
         super().on_mount()
         self.load_servers()
+        # Focus the table so arrow keys and Enter work
+        self.call_later(self.focus_table)
+        
+    def focus_table(self) -> None:
+        """Focus the server table for navigation"""
+        try:
+            table = self.query_one("#server_table", DataTable)
+            table.focus()
+        except:
+            pass
 
     def load_servers(self) -> None:
         """Load server list from monk CLI"""
@@ -94,14 +109,14 @@ class ServerSelectionScreen(BaseVaultScreen):
             self.status_update(f"⚠ Overseer resource list not found! {error_msg}. Use [c] CREATE SERVER.")
 
     def populate_server_table(self) -> None:
-        """Populate server list with killbox notation"""
-        server_list = self.query_one("#server_list", Static)
+        """Populate server table with killbox notation"""
+        table = self.query_one("#server_table", DataTable)
+        table.clear()
         
         if not self.servers_data:
-            server_list.update("No servers configured.")
+            table.add_row("", "No servers configured.", "", "", "")
             return
             
-        lines = []
         for i, server in enumerate(self.servers_data[:9]):  # Max 9 servers
             name = server.get("name", "unknown")
             endpoint = server.get("endpoint", "unknown")
@@ -110,16 +125,32 @@ class ServerSelectionScreen(BaseVaultScreen):
             current_marker = " *" if server.get("is_current", False) else ""
             
             killbox = f"[{i+1}]"
-            line = f"{killbox} {name:12} {endpoint:25} {status:10} {auth_sessions} sessions{current_marker}"
-            lines.append(line)
+            sessions_text = f"{auth_sessions} sessions{current_marker}"
             
-        server_list.update("\n".join(lines))
+            table.add_row(killbox, name, endpoint, status, sessions_text)
 
 
     def update_dynamic_bindings(self) -> None:
         """Update status to show available server range"""
         # Just indicate the range in status message - keep footer simple
         pass
+
+    def action_select_current_server(self) -> None:
+        """Select the currently highlighted server in the table"""
+        table = self.query_one("#server_table", DataTable)
+        if table.cursor_row >= 0 and table.cursor_row < len(self.servers_data):
+            # Use the cursor row position to select server
+            self.select_server_by_index(table.cursor_row)
+        else:
+            self.status_update("No server selected - use arrow keys or press [1-9]")
+
+    def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
+        """Handle ENTER key or row selection in server table"""
+        if event.data_table.id == "server_table":
+            # Get the row that was selected
+            row_index = event.cursor_row
+            if 0 <= row_index < len(self.servers_data):
+                self.select_server_by_index(row_index)
 
     def action_back_to_welcome(self) -> None:
         """Return to welcome screen"""
