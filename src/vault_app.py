@@ -38,14 +38,15 @@ class VaultApp(App):
 
     def compose(self) -> ComposeResult:
         """Compose the main application layout"""
-        # Add simple footer for now (traces can be added later)
-        yield Footer()
+        # Empty placeholder - screens handle their own 4-row layout
+        from textual.widgets import Static
+        yield Static("", classes="bg-black")
 
     def on_mount(self) -> None:
         """Application startup"""
-        # Start with new three-step authentication flow
-        from screens.server_selection_screen import ServerSelectionScreen
-        self.push_screen(ServerSelectionScreen())
+        # Start with welcome screen to demonstrate 4-row layout
+        from screens.welcome_screen import WelcomeScreen
+        self.push_screen(WelcomeScreen())
 
     def action_help(self) -> None:
         """Show help documentation"""

@@ -77,10 +77,68 @@ Footer .description {
 /* ===== CONTAINER STYLES ===== */
 Container {
     background: $bunker-black;
-    border: solid $vault-green;
-    border-title-color: $amber-alert;
-    border-title-style: bold;
 }
+
+/* ===== 4-ROW LAYOUT FRAMEWORK ===== */
+.header-row {
+    dock: top;
+    height: 3;
+    width: 100%;
+    background: $bunker-black;
+    color: $vault-green;
+    text-style: bold;
+    padding: 1 1;
+}
+
+.header-row Horizontal {
+    width: 100%;
+    height: 1;
+}
+
+.header-row Static {
+    height: 1;
+}
+
+.content-window {
+    height: 1fr;
+    margin: 0;
+    background: $bunker-black;
+}
+
+.bottom-area {
+    dock: bottom;
+    height: 2;
+    background: $bunker-black;
+}
+
+.status-row {
+    height: 1;
+    background: $bunker-black;
+    color: $healthy-green;
+    text-align: left;
+    margin: 0 1;
+}
+
+.killbox-row {
+    height: 1;
+    background: $bunker-black;
+    color: $amber-alert;
+    text-style: bold;
+    text-align: left;
+    margin: 0 1;
+}
+
+/* ===== UTILITY COLOR CLASSES ===== */
+.vault-green-text { color: $vault-green; }
+.amber-alert-text { color: $amber-alert; }
+.steel-blue-text { color: $steel-blue; }
+.offline-gray-text { color: $offline-gray; }
+.healthy-green-text { color: $healthy-green; }
+
+/* ===== UTILITY BACKGROUND CLASSES ===== */
+.bg-black { background: $bunker-black; }
+.bg-gray { background: $shadow-gray; }
+.bg-transparent { background: transparent; }
 
 /* ===== WIDGET STYLES ===== */
 Static {
