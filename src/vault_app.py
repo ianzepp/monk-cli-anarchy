@@ -38,9 +38,8 @@ class VaultApp(App):
 
     def compose(self) -> ComposeResult:
         """Compose the main application layout"""
-        # Empty placeholder - screens handle their own 4-row layout
-        from textual.widgets import Static
-        yield Static("", classes="bg-black")
+        # No app-level widgets - screens fully control their layout
+        return []
 
     def on_mount(self) -> None:
         """Application startup"""

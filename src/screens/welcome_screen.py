@@ -42,12 +42,9 @@ class WelcomeScreen(BaseVaultScreen):
     """
     
     BINDINGS = BaseVaultScreen.BINDINGS + [
-        Binding("o", "open_connection", "Open Connection", show=False),
+        Binding("o", "open_connection", "Open Connection", show=True),
     ]
 
-    def compose_commands(self) -> list[str]:
-        """Define local killbox commands"""
-        return ["[o] Open Connection"]
         
     def compose_status(self) -> str:
         """Define default status message"""
@@ -67,13 +64,11 @@ class WelcomeScreen(BaseVaultScreen):
             
             yield Label("ENTERPRISE SUITE™", classes="subtitle steel-blue-text")
             yield Label('"Building Tomorrow\'s Business Solutions... Yesterday\'s Way"', classes="subtitle steel-blue-text")
-            
+
             yield Label("Welcome to the Vault-Tec Enterprise Suite™", classes="welcome-content vault-green-text")
             yield Label("Your comprehensive terminal interface for monk-cli operations", classes="welcome-content vault-green-text")
-            
-            yield Label("Press [o] to open a vault facility connection", classes="instructions offline-gray-text")
-            yield Label("Press [?] for AI assistance with vault operations", classes="instructions offline-gray-text")
 
+            yield Label("[?] AI assistance with vault operations", classes="instructions offline-gray-text")
 
     def action_open_connection(self) -> None:
         """Open vault facility connection (start authentication flow)"""

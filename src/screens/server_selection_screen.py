@@ -10,76 +10,38 @@ from textual.screen import Screen
 from textual.widgets import Button, DataTable, Label, Static
 
 from widgets.vault_container import VaultContainer
+from screens.base_screen import BaseVaultScreen
 from api.monk_client import monk
 
 
-class ServerSelectionScreen(Screen):
+class ServerSelectionScreen(BaseVaultScreen):
     """Step 1: Select server connection"""
     
     CSS = """
-    .centering-container {
-        width: 100%;
-        height: 100%;
-        align: center middle;
-    }
-    
-    .server-container {
-        width: 80;
-        height: auto;
-        max-height: 85%;
-        border: solid #00ff00;
-        border-title-color: #ffb000;
-        border-title-style: bold;
-        overflow-y: auto;
-        padding: 0 2;
-    }
-    
     .step-indicator {
-        color: #ffb000;
         text-style: bold;
         text-align: center;
         margin: 1 0;
     }
     
-    .server-table {
-        height: 12;
-        margin: 1 0;
-    }
-    
-    .server-table:focus-within {
-        border: solid #ffb000;
-        border-title-color: #ff3030;
-    }
-    
-    .action-buttons {
-        height: 3;
+    .server-list {
         margin: 2 0;
-        align: center middle;
-    }
-    
-    .status-message {
-        height: 1;
-        margin: 1 0;
-        text-align: center;
-        color: #ffb000;
+        width: 100%;
     }
     """
     
-    BINDINGS = [
-        Binding("escape", "quit_app", "Quit", show=True),
-        Binding("c", "create_server", "Create Server", show=True),
-        Binding("1", "select_server_1", "[1]", show=True),
-        Binding("2", "select_server_2", "[2]", show=True),
-        Binding("3", "select_server_3", "[3]", show=True),
-        Binding("4", "select_server_4", "[4]", show=True),
-        Binding("5", "select_server_5", "[5]", show=True),
-        Binding("6", "select_server_6", "[6]", show=True),
-        Binding("7", "select_server_7", "[7]", show=True),
-        Binding("8", "select_server_8", "[8]", show=True),
-        Binding("9", "select_server_9", "[9]", show=True),
-        Binding("p", "ping_server", "Ping", show=True),
-        Binding("left", "focus_previous_button", "◀", show=False),
-        Binding("right", "focus_next_button", "▶", show=False),
+    BINDINGS = BaseVaultScreen.BINDINGS + [
+        Binding("escape", "back_to_welcome", "ESC Back", show=True),
+        Binding("c", "create_server", "Create", show=True),
+        Binding("1", "select_server_1", "1-9 Select", show=True),
+        Binding("2", "select_server_2", "\u200b", show=False),
+        Binding("3", "select_server_3", "\u200b", show=False),
+        Binding("4", "select_server_4", "\u200b", show=False),
+        Binding("5", "select_server_5", "\u200b", show=False),
+        Binding("6", "select_server_6", "\u200b", show=False),
+        Binding("7", "select_server_7", "\u200b", show=False),
+        Binding("8", "select_server_8", "\u200b", show=False),
+        Binding("9", "select_server_9", "\u200b", show=False),
     ]
 
     def __init__(self):
@@ -87,34 +49,30 @@ class ServerSelectionScreen(Screen):
         self.servers_data = []
         self.selected_server = None
 
-    def compose(self) -> ComposeResult:
-        """Build the server selection interface"""
-        with Container(classes="centering-container"):
-            with Container(classes="server-container") as container:
-                container.border_title = "VAULT FACILITY SERVER SELECTION"
+    def compose_content(self) -> ComposeResult:
+        """Define server selection content"""
+        with Vertical():
+            yield Label("STEP 1 of 3: Choose Server Connection", classes="step-indicator amber-alert-text")
+            
+            # Server selection list with killboxes
+            yield Static("", id="server_list", classes="server-list vault-green-text")
                 
-                with Vertical():
-                    yield Label("STEP 1 of 3: Choose Server Connection", classes="step-indicator")
-                    
-                    # Server selection list with killboxes
-                    with Container(classes="server-table"):
-                        yield Static("", id="server_list")
-                    
-                    # Status message
-                    yield Static("Select a vault facility server to connect to", id="status_message", classes="status-message")
-                    
-                    # Action buttons with killbox notation
-                    with Horizontal(classes="action-buttons"):
-                        yield Button("[c] CREATE SERVER", variant="primary", id="create_btn")
-                        yield Button("[ESC] QUIT", variant="default", id="quit_btn")
+    def compose_commands(self) -> list[str]:
+        """Define local killbox commands"""
+        return ["[ESC] Back", "[c] Create"]
+        
+    def compose_status(self) -> str:
+        """Define default status message"""
+        return "Select a vault facility server to connect to"
 
     def on_mount(self) -> None:
         """Load server data on startup"""
+        super().on_mount()
         self.load_servers()
 
     def load_servers(self) -> None:
         """Load server list from monk CLI"""
-        self.update_status("Loading vault facility servers...")
+        self.status_update("Loading vault facility servers...")
         
         result = monk.server_list()
         if result.success and isinstance(result.data, dict):
@@ -122,17 +80,18 @@ class ServerSelectionScreen(Screen):
             self.servers_data = servers
             
             if not servers:
-                self.update_status("No servers configured. Use [c] CREATE SERVER to add one.")
+                self.status_update("No servers configured. Use [c] CREATE SERVER to add one.")
                 return
                 
             self.populate_server_table()
-            self.update_status(f"Found {len(servers)} vault facility servers. Use [ENTER] to select.")
+            self.update_dynamic_bindings()
+            self.status_update(f"Found {len(servers)} vault facility servers. Press [1-{len(servers)}] to select.")
         else:
             # No demo data - show proper error
             self.servers_data = []
             self.populate_server_table()  # Shows "No servers configured"
             error_msg = result.error if result.error else "monk CLI unavailable"
-            self.update_status(f"⚠ Overseer resource list not found! {error_msg}. Use [c] CREATE SERVER to configure connections.")
+            self.status_update(f"⚠ Overseer resource list not found! {error_msg}. Use [c] CREATE SERVER.")
 
     def populate_server_table(self) -> None:
         """Populate server list with killbox notation"""
@@ -156,13 +115,15 @@ class ServerSelectionScreen(Screen):
             
         server_list.update("\n".join(lines))
 
-    def update_status(self, message: str) -> None:
-        """Update status message"""
-        self.query_one("#status_message", Static).update(message)
 
-    def action_quit_app(self) -> None:
-        """Quit the application"""
-        self.app.exit()
+    def update_dynamic_bindings(self) -> None:
+        """Update status to show available server range"""
+        # Just indicate the range in status message - keep footer simple
+        pass
+
+    def action_back_to_welcome(self) -> None:
+        """Return to welcome screen"""
+        self.app.pop_screen()
         
     def select_server_by_index(self, index: int) -> None:
         """Select server by index and proceed to tenant selection"""
@@ -171,7 +132,7 @@ class ServerSelectionScreen(Screen):
             server_name = server_data["name"]
             
             # Switch to selected server
-            self.update_status(f"Switching to server: {server_name}")
+            self.status_update(f"Switching to server: {server_name}")
             switch_result = monk.server_use(server_name)
             
             if switch_result.success:
@@ -179,9 +140,9 @@ class ServerSelectionScreen(Screen):
                 from screens.tenant_selection_screen import TenantSelectionScreen
                 self.app.push_screen(TenantSelectionScreen(server_name))
             else:
-                self.update_status(f"Failed to switch server: {switch_result.error}")
+                self.status_update(f"Failed to switch server: {switch_result.error}")
         else:
-            self.update_status("Invalid server selection")
+            self.status_update("Invalid server selection")
 
     # Individual server selection methods
     def action_select_server_1(self) -> None: self.select_server_by_index(0)
@@ -217,49 +178,3 @@ class ServerSelectionScreen(Screen):
         else:
             self.update_status("Please select a server first")
 
-    def action_focus_next_button(self) -> None:
-        """Focus next button without looping"""
-        buttons = self.query("Button")
-        if not buttons:
-            return
-            
-        # Find currently focused button
-        focused_button = None
-        for i, button in enumerate(buttons):
-            if button.has_focus:
-                focused_button = i
-                break
-        
-        # Move to next button, but stop at last one
-        if focused_button is not None and focused_button < len(buttons) - 1:
-            buttons[focused_button + 1].focus()
-        elif focused_button is None:
-            # No button focused, focus first one
-            buttons[0].focus()
-    
-    def action_focus_previous_button(self) -> None:
-        """Focus previous button without looping"""
-        buttons = self.query("Button")
-        if not buttons:
-            return
-            
-        # Find currently focused button
-        focused_button = None
-        for i, button in enumerate(buttons):
-            if button.has_focus:
-                focused_button = i
-                break
-        
-        # Move to previous button, but stop at first one
-        if focused_button is not None and focused_button > 0:
-            buttons[focused_button - 1].focus()
-        elif focused_button is None:
-            # No button focused, focus last one
-            buttons[-1].focus()
-
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        """Handle button press events"""
-        if event.button.id == "create_btn":
-            self.action_create_server()
-        elif event.button.id == "quit_btn":
-            self.action_quit_app()

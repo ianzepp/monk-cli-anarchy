@@ -82,12 +82,17 @@ Container {
 /* ===== 4-ROW LAYOUT FRAMEWORK ===== */
 .header-row {
     dock: top;
-    height: 3;
+    height: 2;
     width: 100%;
     background: $bunker-black;
     color: $vault-green;
     text-style: bold;
-    padding: 1 1;
+    padding: 0 1;
+}
+
+.status-line {
+    color: $healthy-green;
+    height: 1;
 }
 
 .header-row Horizontal {
@@ -102,6 +107,7 @@ Container {
 .content-window {
     height: 1fr;
     margin: 0;
+    padding: 0 1;
     background: $bunker-black;
 }
 

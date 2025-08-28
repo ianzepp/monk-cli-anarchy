@@ -24,23 +24,24 @@ class BaseVaultScreen(Screen):
         super().__init__(**kwargs)
         self.vault_header = ""
         self.vault_status = "Ready"
-        self.vault_killboxes = ""
         self.header_timer = None
+        # Build initial header immediately
+        self.build_vault_header()
 
     def compose(self) -> ComposeResult:
-        """Build the standard 4-row layout"""
-        # Row 1: Header
+        """Build the standard 3-row layout"""
+        # Row 1: Header (2 lines: title + status)
         with Container(classes="header-row"):
             yield Static(self.vault_header, id="vault_header_display")
+            yield Static(self.vault_status, id="vault_status_display", classes="status-line")
         
         # Row 2: Content Window (to be overridden by child classes)
         with Container(classes="content-window"):
             yield from self.compose_content()
         
-        # Rows 3 & 4: Combined bottom area (to avoid dock conflicts)
-        with Container(classes="bottom-area"):
-            yield Static(self.vault_status, id="vault_status_display", classes="status-row")
-            yield Static(self.vault_killboxes, id="vault_killbox_display", classes="killbox-row")
+        # Row 3: Footer (standard Textual footer with killboxes)
+        from textual.widgets import Footer
+        yield Footer()
 
     def compose_content(self) -> ComposeResult:
         """Override this method in child classes to define content area"""
@@ -57,7 +58,6 @@ class BaseVaultScreen(Screen):
     def on_mount(self) -> None:
         """Start header updates"""
         self.build_vault_header()
-        self.build_vault_commands()
         self.build_vault_status()
         self.header_timer = self.set_interval(1.0, self.update_vault_header)
         
