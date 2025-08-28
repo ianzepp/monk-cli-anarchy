@@ -58,7 +58,7 @@ class TenantSelectionScreen(Screen):
     }
     
     .action-buttons {
-        height: 1;
+        height: 3;
         margin: 2 0;
         align: center middle;
     }
@@ -83,6 +83,8 @@ class TenantSelectionScreen(Screen):
         Binding("7", "select_tenant_7", "[7]", show=True),
         Binding("8", "select_tenant_8", "[8]", show=True),
         Binding("9", "select_tenant_9", "[9]", show=True),
+        Binding("left", "focus_previous", "◀", show=False),
+        Binding("right", "focus_next", "▶", show=False),
     ]
 
     def __init__(self, server_name: str):
@@ -110,8 +112,7 @@ class TenantSelectionScreen(Screen):
                     
                     # Action buttons with killbox notation
                     with Horizontal(classes="action-buttons"):
-                        yield Button("[ENTER] SELECT TENANT", variant="primary", id="select_btn")
-                        yield Button("[c] CREATE TENANT", variant="default", id="create_btn")
+                        yield Button("[c] CREATE TENANT", variant="primary", id="create_btn")
                         yield Button("[ESC] BACK TO SERVERS", variant="default", id="back_btn")
 
     def on_mount(self) -> None:
@@ -238,11 +239,7 @@ class TenantSelectionScreen(Screen):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handle button press events"""
-        if event.button.id == "select_btn":
-            self.action_select_tenant()
-        elif event.button.id == "create_btn":
+        if event.button.id == "create_btn":
             self.action_create_tenant()
         elif event.button.id == "back_btn":
             self.action_back_to_servers()
-        elif event.button.id == "quit_btn":
-            self.app.exit()

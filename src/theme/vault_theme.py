@@ -105,7 +105,7 @@ Button:hover {
 }
 
 Button:focus {
-    background: $vault-green;
+    background: $amber-alert;
     color: $bunker-black;
     text-style: bold;
 }

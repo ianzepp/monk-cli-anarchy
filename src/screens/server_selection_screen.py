@@ -52,7 +52,7 @@ class ServerSelectionScreen(Screen):
     }
     
     .action-buttons {
-        height: 1;
+        height: 3;
         margin: 2 0;
         align: center middle;
     }
@@ -78,6 +78,8 @@ class ServerSelectionScreen(Screen):
         Binding("8", "select_server_8", "[8]", show=True),
         Binding("9", "select_server_9", "[9]", show=True),
         Binding("p", "ping_server", "Ping", show=True),
+        Binding("left", "focus_previous_button", "◀", show=False),
+        Binding("right", "focus_next_button", "▶", show=False),
     ]
 
     def __init__(self):
@@ -103,9 +105,7 @@ class ServerSelectionScreen(Screen):
                     
                     # Action buttons with killbox notation
                     with Horizontal(classes="action-buttons"):
-                        yield Button("[ENTER] SELECT SERVER", variant="primary", id="select_btn")
-                        yield Button("[c] CREATE SERVER", variant="default", id="create_btn")
-                        yield Button("[p] PING", variant="default", id="ping_btn")
+                        yield Button("[c] CREATE SERVER", variant="primary", id="create_btn")
                         yield Button("[ESC] QUIT", variant="default", id="quit_btn")
 
     def on_mount(self) -> None:
@@ -217,13 +217,49 @@ class ServerSelectionScreen(Screen):
         else:
             self.update_status("Please select a server first")
 
+    def action_focus_next_button(self) -> None:
+        """Focus next button without looping"""
+        buttons = self.query("Button")
+        if not buttons:
+            return
+            
+        # Find currently focused button
+        focused_button = None
+        for i, button in enumerate(buttons):
+            if button.has_focus:
+                focused_button = i
+                break
+        
+        # Move to next button, but stop at last one
+        if focused_button is not None and focused_button < len(buttons) - 1:
+            buttons[focused_button + 1].focus()
+        elif focused_button is None:
+            # No button focused, focus first one
+            buttons[0].focus()
+    
+    def action_focus_previous_button(self) -> None:
+        """Focus previous button without looping"""
+        buttons = self.query("Button")
+        if not buttons:
+            return
+            
+        # Find currently focused button
+        focused_button = None
+        for i, button in enumerate(buttons):
+            if button.has_focus:
+                focused_button = i
+                break
+        
+        # Move to previous button, but stop at first one
+        if focused_button is not None and focused_button > 0:
+            buttons[focused_button - 1].focus()
+        elif focused_button is None:
+            # No button focused, focus last one
+            buttons[-1].focus()
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handle button press events"""
-        if event.button.id == "select_btn":
-            self.action_select_server()
-        elif event.button.id == "create_btn":
+        if event.button.id == "create_btn":
             self.action_create_server()
-        elif event.button.id == "ping_btn":
-            self.action_ping_server()
         elif event.button.id == "quit_btn":
             self.action_quit_app()

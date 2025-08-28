@@ -65,7 +65,7 @@ class SessionSelectionScreen(Screen):
     }
     
     .action-buttons {
-        height: 1;
+        height: 3;
         margin: 2 0;
         align: center middle;
     }
@@ -82,6 +82,8 @@ class SessionSelectionScreen(Screen):
         Binding("escape", "back_to_tenants", "Back", show=True),
         Binding("enter", "authenticate", "Authenticate", show=True),
         Binding("s", "use_existing", "Use Existing", show=True),
+        Binding("left", "focus_previous", "◀", show=False),
+        Binding("right", "focus_next", "▶", show=False),
     ]
 
     def __init__(self, server_name: str, tenant_name: str):

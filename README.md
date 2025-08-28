@@ -52,43 +52,119 @@ monk-uix-anarchy/
 └── requirements.txt  # Python dependencies
 ```
 
+## Design Language
+
+monk-cli-anarchy implements a comprehensive UI framework designed for enterprise terminal applications with consistent navigation patterns and efficient workflows.
+
+### **Global Layout Structure**
+
+**4-Row Application Layout:**
+1. **Header Row**: Server/tenant context (left) + time (center) + global killboxes (right)
+2. **Content Window**: Massive main workspace for all operations and data display
+3. **Status Row**: Success/error messages and operational feedback
+4. **Killbox Row**: Context-specific command shortcuts for current screen
+
+### **Navigation Conventions**
+
+**Killbox Notation `[key]`:**
+- **Universal principle**: Anything in brackets is a hot key that interrupts current flow
+- **Global killboxes**: `[?]` AI Assistant, `[s]` Global Search, `[q]` Logout
+- **Local killboxes**: `[f]` Find, `[c]` Create, `[d]` Delete, `[u]` Update
+- **Module killboxes**: `[1-6]` Vault Facility Modules, `[1-9]` Item Selection
+
+**Keyboard Interaction Rules:**
+- **Buttons**: Always horizontal, left/right arrows navigate, no looping at boundaries
+- **Forms**: Always vertical, up/down between inputs, Enter submits
+- **Tables**: Up/down scrolling, `[u][d]` actions on selected row only
+- **Complex forms**: Split content window, Tab switches focus between sides
+
+**Form Layout Patterns:**
+- **Simple forms**: Single column, vertical navigation
+- **Complex forms**: Two side-by-side forms in content window with Tab switching
+- **Each form**: Independent up/down navigation and left/right button control
+
+**Table Interaction Model:**
+```
+┌─ DATA RESULTS ────────────────────────────────────┐
+│ [u][d] │ 12345 │ John Doe     │ Engineering     │ ← Actions only on selected
+│        │ 12346 │ Jane Smith   │ Sales           │   
+│        │ 12347 │ Mike Johnson │ Operations      │
+└────────────────────────────────────────────────────┘
+```
+- **Enter**: Open record in view mode (assumed, not displayed)
+- **[u]**: Update/edit selected record
+- **[d]**: Delete selected record with confirmation
+
+**Modal Dialog Strategy:**
+- **Simple confirmations**: Dialog within content window
+- **Complex operations**: Full 4-row screen (e.g., tenant deletion with re-authentication)
+
+**Responsive Design Priority:**
+1. **Server/tenant context**: Always preserved (most critical)
+2. **Time display**: Removed first on narrow terminals
+3. **Global killboxes**: Shortened (`[?] AI Assistant` → `[?]`)
+4. **Local killboxes**: Progressive shortening (`[c] Create Tenant` → `[c] Create` → `[c]`)
+
+### **Implementation Benefits**
+
+**Consistency**: Same patterns work across all vault facility modules
+**Efficiency**: Muscle memory applies universally (F/C/D/U everywhere)
+**Scalability**: Framework handles simple lists to complex multi-form operations
+**Professional**: Enterprise-grade terminal interface design
+**Intuitive**: Natural keyboard flow without mode confusion
+
+This design language ensures every vault facility module feels familiar while maintaining the distinctive Vault-Tec aesthetic and enterprise functionality.
+
 ## Features
 
-- **Authentication System**: Vault-Tec Network Access Terminal
-- **Overseer Console**: Main dashboard with real-time monitoring
-- **Keyboard Navigation**: Full keyboard control with Fallout-themed shortcuts
-- **Vault-Tec Theming**: Authentic terminal aesthetics with radiation spectrum colors
-- **Modular Architecture**: Easy to extend with new vault facility modules
+### **Three-Step Authentication**
+- **Server Selection**: Killbox [1-9] selection from real monk CLI server registry
+- **Tenant Selection**: Server-scoped tenant databases with authentication status
+- **Session Selection**: Existing session detection + familiar authentication interface
+
+### **Vault Facility Modules**
+- **Department Registry**: Multi-server and tenant management with real monk CLI integration
+- **Schema Laboratory**: Data structure design with JSON/YAML support
+- **Population Management**: Record operations with AI-powered filtering
+- **Security Protocols**: Observer system monitoring (planned)
+- **File Archives**: Document management system (planned)  
+- **Wasteland Testing**: QA environment with Mad Max theming (planned)
+
+### **AI-Powered Features**
+- **Global AI Assistant**: `?` key accessible from anywhere for vault operations help
+- **Natural Language Queries**: "What are my servers?" → Navigation guidance
+- **Filter Builder**: English to Filter DSL conversion for complex database searches
+- **Intent Recognition**: Converts questions to appropriate module navigation and filtering
+
+### **Enterprise Features**
+- **Real monk-cli Integration**: Subprocess calls to monk commands with JSON parsing
+- **Universal Killbox Notation**: [f/c/d/u] muscle memory across all modules
+- **Session Management**: Live JWT countdown with expiration handling
+- **Record Management**: Complete List → View → Edit workflow with database field editing
+- **Server-Scoped Architecture**: Logical separation of infrastructure → tenants → sessions
+
+### **Professional UI**
+- **4-Row Layout**: Consistent structure across all screens
+- **Vault-Tec Theming**: Authentic Fallout terminal aesthetics
+- **Focus Management**: Proper button highlighting and navigation
+- **Error Handling**: Graceful fallbacks when monk CLI unavailable
+- **Responsive Design**: Adaptive to different terminal sizes
 
 ## Current Status
 
-✅ **Implemented:**
-- Basic application structure
-- Authentication screen with Vault-Tec styling
-- Main Overseer Console dashboard
-- System status panels and activity log
-- Theme system with Fallout color palette
+✅ **Production Ready:**
+- Three-step authentication with real monk CLI integration
+- Universal killbox notation and navigation patterns
+- AI assistant with natural language processing
+- Record management with realistic database operations
+- Comprehensive design language framework
 
-🚧 **In Progress:**
-- Module navigation (Schema Lab, Population Management, etc.)
-- Real Monk API integration
-- WebSocket real-time updates
+🚧 **In Development:**
+- Enhanced table interactions with per-row action display
+- Global search interface connecting to /api/find endpoint
+- Advanced filter builder with visual condition groups
 
-📋 **Planned:**
-- Schema Laboratory (visual + YAML editing)
-- Population Management (CRUD operations)
-- Security Protocols (Observer monitoring)
-- Wasteland Testing (Mad Max-themed QA environment)
-
-## Development
-
-The application is structured as a collection of Textual screens and widgets, with a comprehensive theming system that brings the Fallout universe to your terminal.
-
-Each major feature corresponds to a "vault facility module" as described in the design documents in `docs/`.
-
-## Authentication
-
-Default test credentials:
-- **Tenant:** `test-1756112139`
-- **Username:** `root`
-- **Password:** (any value for demo)
+📋 **Planned Enhancements:**
+- Wasteland Testing environment (Mad Max-themed QA)
+- Real-time WebSocket updates for live vault monitoring
+- Command trace bars for development debugging
