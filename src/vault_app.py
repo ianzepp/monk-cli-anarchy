@@ -11,6 +11,8 @@ from textual.screen import Screen
 from screens.auth_screen import AuthScreen
 from screens.overseer_screen import OverseerScreen
 from theme.vault_theme import VAULT_CSS
+from widgets.vault_footer import VaultFooter
+from api.monk_client import monk
 
 
 class VaultApp(App):
@@ -31,6 +33,12 @@ class VaultApp(App):
         self.current_user = None
         self.current_vault = None
         self.authenticated = False
+        self.vault_footer = None
+
+    def compose(self) -> ComposeResult:
+        """Compose the main application layout"""
+        # Add simple footer for now (traces can be added later)
+        yield Footer()
 
     def on_mount(self) -> None:
         """Application startup"""

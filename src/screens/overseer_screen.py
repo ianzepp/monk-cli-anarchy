@@ -7,11 +7,9 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal, Vertical
 from textual.screen import Screen
-from textual.widgets import Button, Footer, Header, Label, Static
+from textual.widgets import Button, Footer, Header, Label, Static, Select
 from textual.timer import Timer
 
-from widgets.system_status_panel import SystemStatusPanel
-from widgets.population_panel import PopulationPanel
 from widgets.alert_panel import AlertPanel
 from widgets.activity_log import ActivityLog
 from widgets.module_navigation import ModuleNavigation
@@ -32,6 +30,12 @@ class OverseerScreen(Screen):
         color: #00ff00;
     }
     
+    .status-icons {
+        text-align: center;
+        color: #22c55e;
+        margin: 1 1 0 1;
+    }
+    
     .session-info {
         text-align: right;
         color: #ffb000;
@@ -43,6 +47,12 @@ class OverseerScreen(Screen):
         color: #00ff00;
         text-style: bold;
         margin: 1 0 0 2;
+        width: auto;
+    }
+    
+    .session-dropdown {
+        width: 30;
+        margin: 1 1;
     }
     
     .dashboard-panels {
@@ -56,7 +66,7 @@ class OverseerScreen(Screen):
     }
     
     ModuleNavigation {
-        height: 10;
+        height: 8;
         margin: 1 2;
     }
     
@@ -74,16 +84,14 @@ class OverseerScreen(Screen):
     """
     
     BINDINGS = [
-        Binding("1", "module_1", "Dept Registry", show=True),
-        Binding("2", "module_2", "Schema Lab", show=True), 
-        Binding("3", "module_3", "Population", show=True),
-        Binding("4", "module_4", "Security", show=True),
-        Binding("5", "module_5", "File Archives", show=True),
-        Binding("6", "module_6", "Wasteland", show=True),
-        Binding("s", "search", "Search", show=True),
-        Binding("v", "switch_vault", "Switch Vault", show=True),
+        Binding("1", "module_1", "[1]", show=True),
+        Binding("2", "module_2", "[2]", show=True), 
+        Binding("3", "module_3", "[3]", show=True),
+        Binding("4", "module_4", "[4]", show=True),
+        Binding("5", "module_5", "[5]", show=True),
+        Binding("6", "module_6", "[6]", show=True),
+        Binding("v", "switch_vault", "[v] Switch", show=True),
         Binding("r", "refresh", "Refresh", show=True),
-        Binding("c", "command", "Command", show=True),
     ]
 
     def __init__(self):
@@ -93,27 +101,19 @@ class OverseerScreen(Screen):
 
     def compose(self) -> ComposeResult:
         """Build the overseer console interface"""
-        # Header with user and session info
+        # Header with user info, population stats, and session
         with Container(classes="overseer-header"):
-            with Horizontal():
-                yield Label(
-                    f"▼ OVERSEER: {self.app.current_user}@{self.app.current_vault} ▼",
-                    classes="user-info", 
-                    id="user_info_label"
-                )
-                yield Label("Session: Loading...", classes="session-info", id="session_info_label")
+            yield Label("👑 Loading... | # 0/0/0 | ● API ● DB ● SEC | Session: Initializing... | V=Switch", id="user_info_label")
         
-        # System status panels
+        # Module navigation (moved to top)
+        yield ModuleNavigation()
+            
+        # Main dashboard panels (removed system status and population)
         with Horizontal(classes="dashboard-panels"):
-            yield SystemStatusPanel()
-            yield PopulationPanel() 
             yield AlertPanel()
             
         # Activity log
         yield ActivityLog()
-            
-        # Module navigation
-        yield ModuleNavigation()
             
         # Command hints
         with Container(classes="command-bar"):
@@ -148,12 +148,13 @@ class OverseerScreen(Screen):
         # Generate fresh mock data
         data = vault_data.generate_dashboard_data()
         
-        # Update system status panel
+        # Update status icons in header
         try:
-            system_panel = self.query_one(SystemStatusPanel)
-            system_panel.update_system_status(data["system_status"])
+            status_icons = self.query_one("#status_icons", Label)
+            # Simple status display - green dots when all good
+            status_icons.update("● API ● DB ● SEC")
         except:
-            pass  # Widget might not be mounted yet
+            pass
             
         # Update population panel  
         try:
@@ -191,18 +192,35 @@ class OverseerScreen(Screen):
             if info_result.success and isinstance(info_result.data, dict):
                 auth_info = info_result.data
                 
-                # Update user info label
                 tenant = auth_info.get("tenant", self.app.current_vault)
-                username = auth_info.get("name", self.app.current_user) 
-                user_label = self.query_one("#user_info_label", Label)
-                user_label.update(f"▼ OVERSEER: {username}@{tenant} ▼")
+                username = auth_info.get("name", self.app.current_user)
                 
                 # Get live session countdown
                 expires_result = monk.auth_expires()
+                session_display = "Session: Loading..."
                 if expires_result.success:
                     session_display = SessionTimer.get_session_display(expires_result.data)
-                    session_label = self.query_one("#session_info_label", Label)
-                    session_label.update(session_display)
+                
+                # Get population stats for header
+                pop_data = vault_data.generate_population_stats()
+                total = pop_data.get("total", 0)
+                active = pop_data.get("active", 0) 
+                offline = pop_data.get("offline", 0)
+                
+                # Get access level icon from JWT
+                access_level = auth_info.get("access", "read")
+                access_icons = {
+                    "root": "👑",    # Crown for root access
+                    "full": "🔓",    # Unlocked for full access  
+                    "edit": "✏️",     # Pencil for edit access
+                    "read": "👁️",     # Eye for read-only access
+                }
+                access_icon = access_icons.get(access_level, "❓")
+                
+                # Build header with access icon and population stats
+                header_text = f"{access_icon} {username}@{tenant} | # {total}/{active}/{offline} | ● API ● DB ● SEC | {session_display} | V=Switch"
+                user_label = self.query_one("#user_info_label", Label)
+                user_label.update(header_text)
                 
                 # Update app context with real data
                 self.app.current_user = username
@@ -216,10 +234,23 @@ class OverseerScreen(Screen):
         """Update the live session countdown"""
         try:
             expires_result = monk.auth_expires()
+            session_display = "Session: Loading..."
             if expires_result.success:
                 session_display = SessionTimer.get_session_display(expires_result.data)
-                session_label = self.query_one("#session_info_label", Label)
-                session_label.update(session_display)
+            
+            # Get fresh population stats for countdown update
+            pop_data = vault_data.generate_population_stats()
+            total = pop_data.get("total", 0)
+            active = pop_data.get("active", 0)
+            offline = pop_data.get("offline", 0)
+            
+            # Get access level for icon (fallback if no auth context)
+            access_icon = "👑"  # Default to root for session countdown updates
+            
+            # Update the combined header with population
+            header_text = f"{access_icon} {self.app.current_user}@{self.app.current_vault} | # {total}/{active}/{offline} | ● API ● DB ● SEC | {session_display} | V=Switch"
+            user_label = self.query_one("#user_info_label", Label)
+            user_label.update(header_text)
         except Exception:
             pass
 
@@ -235,8 +266,8 @@ class OverseerScreen(Screen):
         
     def action_module_3(self) -> None:
         """Navigate to Population Management"""
-        self.app.bell()
-        # TODO: Implement navigation to population screen
+        from screens.population_management_screen import PopulationManagementScreen
+        self.app.push_screen(PopulationManagementScreen())
         
     def action_module_4(self) -> None:
         """Navigate to Security Protocols"""
@@ -272,3 +303,17 @@ class OverseerScreen(Screen):
         """Enter command terminal mode"""
         self.app.bell()
         # TODO: Implement command terminal modal
+        
+    def on_select_changed(self, event: Select.Changed) -> None:
+        """Handle session dropdown selection"""
+        if event.select.id == "session_select" and event.value != "loading":
+            # User selected a different server session
+            selected_server = event.value
+            
+            # Switch to the selected server
+            switch_result = monk.server_use(selected_server)
+            if switch_result.success:
+                # Refresh auth context after switch
+                self.call_later(self.update_auth_context)
+            else:
+                self.app.bell()  # Error sound

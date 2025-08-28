@@ -90,12 +90,14 @@ class DepartmentRegistryScreen(Screen):
     """
     
     BINDINGS = [
-        Binding("escape", "back_to_overseer", "Back to Overseer", show=True),
+        Binding("escape", "back_to_overseer", "Back", show=True),
+        Binding("f", "find_items", "Find", show=True),      # Standard: Find/refresh data
+        Binding("c", "create_item", "Create", show=True),   # Standard: Create new
+        Binding("d", "delete_item", "Delete", show=True),   # Standard: Delete selected
+        Binding("u", "use_selected", "Use", show=True),     # Standard: Update/Use selected
         Binding("s", "toggle_servers", "Servers", show=True),
-        Binding("t", "toggle_tenants", "Tenants", show=True),
+        Binding("t", "toggle_tenants", "Tenants", show=True), 
         Binding("r", "refresh", "Refresh", show=True),
-        Binding("a", "add_item", "Add", show=True),
-        Binding("d", "delete_item", "Delete", show=True),
         Binding("p", "ping_item", "Ping", show=True),
         Binding("enter", "use_selected", "Use Selected", show=True),
     ]
@@ -140,10 +142,11 @@ class DepartmentRegistryScreen(Screen):
         # Action buttons
         with Container(classes="action-bar"):
             with Horizontal(classes="action-buttons"):
-                yield Button("▶ ADD NEW", variant="primary", id="add_btn")
-                yield Button("◉ USE/SWITCH", variant="default", id="use_btn")
-                yield Button("⚠ DELETE", variant="default", id="delete_btn")
-                yield Button("📡 PING", variant="default", id="ping_btn")
+                yield Button("[f] FIND", variant="default", id="find_btn")
+                yield Button("[c] CREATE", variant="primary", id="create_btn")
+                yield Button("[d] DELETE", variant="default", id="delete_btn")
+                yield Button("[u] USE", variant="default", id="use_btn")
+                yield Button("[p] PING", variant="default", id="ping_btn")
                 
         yield Footer()
 
@@ -322,13 +325,22 @@ class DepartmentRegistryScreen(Screen):
         else:
             self.load_tenants()
 
-    def action_add_item(self) -> None:
-        """Add new server or tenant"""
-        self.app.bell()
+    def action_find_items(self) -> None:
+        """Find/refresh current items"""
+        self.action_refresh()
+        
+    def action_create_item(self) -> None:
+        """Create new server or tenant"""
         if self.current_view == "servers":
-            self.update_status("Server addition not yet implemented")
+            from screens.new_server_screen import NewServerScreen
+            self.app.push_screen(NewServerScreen())
         else:
+            self.app.bell()
             self.update_status("Tenant creation not yet implemented")
+            
+    def action_add_item(self) -> None:
+        """Legacy method - redirect to create"""
+        self.action_create_item()
 
     def action_delete_item(self) -> None:
         """Delete selected item"""
@@ -382,11 +394,13 @@ class DepartmentRegistryScreen(Screen):
             self.action_toggle_servers()
         elif event.button.id == "tenants_tab":
             self.action_toggle_tenants()
-        elif event.button.id == "add_btn":
-            self.action_add_item()
-        elif event.button.id == "use_btn":
-            self.action_use_selected()
+        elif event.button.id == "find_btn":
+            self.action_find_items()
+        elif event.button.id == "create_btn":
+            self.action_create_item()
         elif event.button.id == "delete_btn":
             self.action_delete_item()
+        elif event.button.id == "use_btn":
+            self.action_use_selected()
         elif event.button.id == "ping_btn":
             self.action_ping_item()

@@ -29,12 +29,26 @@ class MonkClient:
     
     def __init__(self, monk_binary: str = None):
         self.monk_binary = monk_binary or config.monk_executable
+        self.send_trace = None
+        self.recv_trace = None
+    
+    def set_trace_widgets(self, send_trace, recv_trace):
+        """Set trace widgets for command/response display"""
+        self.send_trace = send_trace
+        self.recv_trace = recv_trace
         
-    def _execute_command(self, args: List[str], timeout: int = 5) -> MonkCommandResult:
+    def _execute_command(self, args: List[str], timeout: int = 5, trace_data: dict = None) -> MonkCommandResult:
         """Execute a monk command and return structured result"""
         try:
             # Build full command
             cmd = [self.monk_binary] + args
+            
+            # Show command trace if widget is available
+            command_str = " ".join(args)
+            if self.send_trace and hasattr(self.send_trace, 'show_send_trace'):
+                self.send_trace.show_send_trace(command_str, trace_data)
+            elif self.send_trace and hasattr(self.send_trace, 'show_command'):
+                self.send_trace.show_command(command_str, trace_data)
             
             # Execute command
             result = subprocess.run(
@@ -58,6 +72,13 @@ class MonkClient:
                     except yaml.YAMLError:
                         # Not structured data, use raw output
                         data = result.stdout.strip()
+            
+            # Show response trace if widget is available
+            if self.recv_trace and data:
+                if hasattr(self.recv_trace, 'show_recv_trace'):
+                    self.recv_trace.show_recv_trace(data)
+                elif hasattr(self.recv_trace, 'show_response'):
+                    self.recv_trace.show_response(data)
             
             return MonkCommandResult(
                 success=result.returncode == 0,

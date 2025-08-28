@@ -85,8 +85,6 @@ class AuthScreen(Screen):
 
     def compose(self) -> ComposeResult:
         """Build the authentication interface"""
-        yield Header(show_clock=True)
-        
         # Center the auth container on screen
         with Container(classes="centering-container"):
             with Container(classes="auth-container") as container:
@@ -134,13 +132,15 @@ class AuthScreen(Screen):
                     with Horizontal(classes="button-row"):
                         yield Button("▶ REQUEST ACCESS", variant="primary", id="auth_button")
                         yield Button("◉ SERVER SETUP", variant="default", id="setup_button")
-                    
-        yield Footer()
 
     def on_mount(self) -> None:
-        """Focus the tenant input on startup or check existing authentication"""
-        # Always check existing auth, but never auto-proceed
-        self.call_later(self.check_existing_auth)
+        """Focus the tenant input on startup or auto-authenticate in overseer mode"""
+        if config.is_overseer_mode:
+            # Auto-authenticate in overseer mode
+            self.call_later(self.auto_authenticate)
+        else:
+            # Check existing auth, manual proceed
+            self.call_later(self.check_existing_auth)
 
     def auto_authenticate(self) -> None:
         """Auto-authenticate in overseer mode"""
