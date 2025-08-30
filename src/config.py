@@ -19,6 +19,10 @@ class VaultConfig:
         
         # Monk CLI executable path
         self.monk_executable = os.getenv("MONK_EXECUTABLE", "monk")  # Default to global binary
+        
+        # Development mode screen bypass
+        self.dev_start_screen = os.getenv("DEV_START_SCREEN", "")  # e.g., "overseer", "population", "schema"
+        self.dev_mock_auth = self._get_bool_env("DEV_MOCK_AUTH", False)  # Skip real authentication
     
     def _get_bool_env(self, key: str, default: bool = False) -> bool:
         """Get boolean environment variable"""

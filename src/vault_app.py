@@ -41,9 +41,15 @@ class VaultApp(App):
 
     def on_mount(self) -> None:
         """Application startup"""
-        # Start with welcome screen to demonstrate 4-row layout
-        from screens.welcome_screen import WelcomeScreen
-        self.push_screen(WelcomeScreen())
+        from config import config
+        
+        # Check for development mode screen bypass
+        if config.dev_start_screen:
+            self._start_dev_screen(config.dev_start_screen)
+        else:
+            # Start with welcome screen to demonstrate 4-row layout
+            from screens.welcome_screen import WelcomeScreen
+            self.push_screen(WelcomeScreen())
 
     def action_help(self) -> None:
         """Show help documentation"""
@@ -78,3 +84,61 @@ class VaultApp(App):
         # Return to authentication
         self.pop_screen()  # Remove current screen
         self.push_screen(AuthScreen())
+    
+    def _start_dev_screen(self, screen_name: str) -> None:
+        """Start application at specific screen for development/testing"""
+        from config import config
+        
+        # Set up mock authentication state if needed
+        if config.dev_mock_auth:
+            self.current_user = config.default_username
+            self.current_vault = config.default_tenant
+            self.authenticated = True
+        
+        # Route to specific screens
+        screen_name = screen_name.lower()
+        
+        if screen_name == "overseer":
+            self.current_user = self.current_user or "dev-user"
+            self.current_vault = self.current_vault or "dev-vault"
+            self.authenticated = True
+            from screens.overseer_screen import OverseerScreen
+            self.push_screen(OverseerScreen())
+            
+        elif screen_name == "population":
+            self.current_user = self.current_user or "dev-user"
+            self.current_vault = self.current_vault or "dev-vault"
+            self.authenticated = True
+            from screens.population_management_screen import PopulationManagementScreen
+            self.push_screen(PopulationManagementScreen())
+            
+        elif screen_name == "department" or screen_name == "registry":
+            self.current_user = self.current_user or "dev-user"
+            self.current_vault = self.current_vault or "dev-vault"
+            self.authenticated = True
+            from screens.department_registry_screen import DepartmentRegistryScreen
+            self.push_screen(DepartmentRegistryScreen())
+            
+        elif screen_name == "schema" or screen_name == "lab":
+            self.current_user = self.current_user or "dev-user"
+            self.current_vault = self.current_vault or "dev-vault"
+            self.authenticated = True
+            from screens.schema_lab_screen import SchemaLabScreen
+            self.push_screen(SchemaLabScreen())
+            
+        elif screen_name == "server":
+            from screens.server_selection_screen import ServerSelectionScreen
+            self.push_screen(ServerSelectionScreen())
+            
+        elif screen_name == "tenant":
+            from screens.tenant_selection_screen import TenantSelectionScreen
+            self.push_screen(TenantSelectionScreen("dev-server"))
+            
+        elif screen_name == "session":
+            from screens.session_selection_screen import SessionSelectionScreen
+            self.push_screen(SessionSelectionScreen("dev-server", "dev-tenant"))
+            
+        else:
+            # Unknown screen, fall back to welcome
+            from screens.welcome_screen import WelcomeScreen
+            self.push_screen(WelcomeScreen())
