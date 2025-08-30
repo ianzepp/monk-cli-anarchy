@@ -228,9 +228,47 @@ class MonkClient:
             args.append(schema)
         return self._execute_command(args)
     
-    def meta_create(self, schema: str, definition: Dict) -> MonkCommandResult:
-        """Execute: monk meta create <schema> <definition>"""
-        return self._execute_command(["meta", "create", schema, json.dumps(definition)])
+    def meta_create(self, schema_type: str, schema_data: Dict) -> MonkCommandResult:
+        """Execute: monk meta create <type> with schema data via stdin"""
+        try:
+            # Build command
+            cmd = [self.monk_binary, "meta", "create", schema_type]
+            
+            # Convert schema data to JSON for stdin
+            schema_json = json.dumps(schema_data, indent=2)
+            
+            # Execute with stdin
+            result = subprocess.run(
+                cmd,
+                input=schema_json,
+                capture_output=True,
+                text=True,
+                timeout=10,
+                check=False
+            )
+            
+            # Parse response
+            data = None
+            if result.stdout.strip():
+                try:
+                    data = json.loads(result.stdout)
+                except json.JSONDecodeError:
+                    data = result.stdout.strip()
+            
+            return MonkCommandResult(
+                success=result.returncode == 0,
+                data=data,
+                error=result.stderr.strip() if result.stderr else "",
+                raw_output=result.stdout.strip(),
+                exit_code=result.returncode
+            )
+            
+        except Exception as e:
+            return MonkCommandResult(
+                success=False,
+                error=f"Meta create error: {str(e)}",
+                exit_code=-1
+            )
     
     def meta_update(self, schema: str, definition: Dict) -> MonkCommandResult:
         """Execute: monk meta update <schema> <definition>"""

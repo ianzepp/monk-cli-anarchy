@@ -227,31 +227,28 @@ class SchemaWizardScreen(BaseVaultScreen):
             if not table_name:
                 table_name = schema_name.lower().replace(" ", "_").replace("-", "_")
             
-            # Build schema definition
-            schema_definition = {
-                "type": "object",
-                "title": schema_name.title(),
-                "description": description,
-                "properties": {},
-                "required": [],
-                "additionalProperties": False
-            }
-            
-            # Prepare schema data for monk CLI
-            schema_payload = {
+            # Build complete schema data structure for monk CLI
+            schema_data = {
                 "name": schema_name,
                 "table_name": table_name,
                 "status": status,
-                "definition": schema_definition
+                "definition": {
+                    "type": "object",
+                    "title": schema_name.title(),
+                    "description": description,
+                    "properties": {},
+                    "required": [],
+                    "additionalProperties": False
+                }
             }
             
             self.status_update(f"{'Creating' if self.mode == 'create' else 'Updating'} schema...")
             
-            # Call monk CLI
+            # Call monk CLI with proper schema type
             if self.mode == "create":
-                result = monk.meta_create(schema_name, schema_definition)
+                result = monk.meta_create("schema", schema_data)
             else:
-                result = monk.meta_update(schema_name, schema_definition)
+                result = monk.meta_update(schema_name, schema_data)
             
             if result.success:
                 self.status_update(f"✅ Schema {'created' if self.mode == 'create' else 'updated'} successfully")
