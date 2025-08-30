@@ -37,6 +37,7 @@ class SchemaWizardScreen(BaseVaultScreen):
     .form-row {
         margin: 0 0;
         padding: 0 0;
+        height: 3;
     }
     
     .form-label {
@@ -49,6 +50,7 @@ class SchemaWizardScreen(BaseVaultScreen):
     
     .form-input {
         width: 1fr;
+        height: 3;
     }
     
     .form-group {
