@@ -56,6 +56,7 @@ class SchemaWizardScreen(BaseVaultScreen):
     .form-group {
         margin: 0 0;
     }
+    
     """
     
     BINDINGS = BaseVaultScreen.BINDINGS + [
@@ -91,19 +92,19 @@ class SchemaWizardScreen(BaseVaultScreen):
             yield Static("BASIC INFORMATION", classes="section-header amber-alert-text")
             
             with Horizontal(classes="form-row"):
-                yield Label("Schema Name:", classes="form-label")
+                yield Label("Schema Name*:", classes="form-label amber-alert-text")
                 yield Input(
                     value=self.schema_data.get("name", ""),
-                    placeholder="e.g., employee_evaluations",
+                    placeholder="e.g., employee_evaluations (REQUIRED)",
                     id="schema_name",
                     classes="form-input"
                 )
             
             with Horizontal(classes="form-row"):
-                yield Label("Description:", classes="form-label") 
+                yield Label("Description*:", classes="form-label amber-alert-text") 
                 yield Input(
                     value=self.schema_data.get("description", ""),
-                    placeholder="Brief description of schema purpose",
+                    placeholder="Brief description of schema purpose (REQUIRED)",
                     id="schema_description",
                     classes="form-input"
                 )
@@ -143,13 +144,6 @@ class SchemaWizardScreen(BaseVaultScreen):
                         classes="form-input"
                     )
             
-            # Deployment Settings Section
-            yield Static("DEPLOYMENT SETTINGS", classes="section-header amber-alert-text")
-            
-            yield Checkbox("Enable data validation", value=True, id="enable_validation", classes="form-group")
-            yield Checkbox("Create audit trail", value=True, id="create_audit", classes="form-group") 
-            yield Checkbox("Auto-backup before changes", value=False, id="auto_backup", classes="form-group")
-            yield Checkbox("Require approval for deployment", value=False, id="require_approval", classes="form-group")
             
             # Status/Info Section
             yield Static("", id="wizard_status", classes="stats-summary healthy-green-text")
@@ -218,13 +212,15 @@ class SchemaWizardScreen(BaseVaultScreen):
             table_name = self.query_one("#table_name", Input).value.strip()
             status = self.query_one("#schema_status", Select).value
             
-            # Validation
+            # Validation - focus on first missing required field
             if not schema_name:
                 self.status_update("⚠ Schema name is required")
+                self.query_one("#schema_name", Input).focus()
                 return
                 
             if not description:
                 self.status_update("⚠ Description is required")
+                self.query_one("#schema_description", Input).focus()
                 return
             
             # Auto-generate table name if empty
