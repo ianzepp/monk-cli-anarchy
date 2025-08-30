@@ -126,6 +126,13 @@ class VaultApp(App):
             from screens.schema_lab_screen import SchemaLabScreen
             self.push_screen(SchemaLabScreen())
             
+        elif screen_name == "schema_wizard_1":
+            self.current_user = self.current_user or "dev-user"
+            self.current_vault = self.current_vault or "dev-vault"
+            self.authenticated = True
+            from screens.schema_wizard_screen import SchemaWizardScreen
+            self.push_screen(SchemaWizardScreen(mode="create"))
+            
         elif screen_name == "server":
             from screens.server_selection_screen import ServerSelectionScreen
             self.push_screen(ServerSelectionScreen())
