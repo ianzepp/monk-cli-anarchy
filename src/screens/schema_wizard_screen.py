@@ -134,17 +134,12 @@ class SchemaWizardScreen(BaseVaultScreen):
             if self.mode == "create":
                 yield Static("SCHEMA TEMPLATE", classes="section-header amber-alert-text")
                 
-                with RadioSet(id="template_options", classes="form-group"):
-                    yield RadioButton("Start from scratch", value=True, id="template_scratch")
-                    yield RadioButton("Clone existing schema", id="template_clone")
-                    yield RadioButton("Import from file", id="template_import")
-                
-                # Clone options (initially hidden)
-                with Horizontal(classes="form-row", id="clone_options"):
+                with Horizontal(classes="form-row"):
                     yield Label("Clone from:", classes="form-label")
                     yield Select(
-                        options=[],  # Will be populated with existing schemas
-                        id="clone_source",
+                        options=[("scratch", "Start from scratch")],  # Default option, others populated in load_existing_schemas
+                        value="scratch",
+                        id="template_source",
                         classes="form-input"
                     )
             
@@ -171,10 +166,8 @@ class SchemaWizardScreen(BaseVaultScreen):
         super().on_mount()
         
         if self.mode == "create":
-            # Load existing schemas for cloning options
+            # Load existing schemas for template dropdown
             self.load_existing_schemas()
-            # Hide clone options initially
-            self.call_later(self.hide_clone_options)
         
         # Focus the schema name input
         self.call_later(self.focus_name_input)
@@ -188,40 +181,29 @@ class SchemaWizardScreen(BaseVaultScreen):
             pass
 
     def load_existing_schemas(self) -> None:
-        """Load existing schemas for clone dropdown"""
+        """Load existing schemas for template dropdown"""
         result = monk.data_select("schema")
         if result.success and isinstance(result.data, list):
             self.existing_schemas = result.data
             
-            # Populate clone dropdown
+            # Populate template dropdown with "Start from scratch" + existing schemas
             try:
-                clone_select = self.query_one("#clone_source", Select)
-                options = [(schema.get("name", "unknown"), schema.get("name", "unknown")) 
-                          for schema in self.existing_schemas 
-                          if schema.get("status") in ["active", "system"]]
-                clone_select.set_options(options)
+                template_select = self.query_one("#template_source", Select)
+                
+                # Start with "Start from scratch" option
+                options = [("scratch", "Start from scratch")]
+                
+                # Add existing schemas that can be cloned
+                for schema in self.existing_schemas:
+                    if schema.get("status") in ["active", "system"]:
+                        name = schema.get("name", "unknown")
+                        display_name = f"Clone: {name}"
+                        options.append((name, display_name))
+                
+                template_select.set_options(options)
             except:
                 pass
 
-    def hide_clone_options(self) -> None:
-        """Hide clone options initially"""
-        try:
-            clone_options = self.query_one("#clone_options")
-            clone_options.display = False
-        except:
-            pass
-
-    def on_radio_set_changed(self, event: RadioSet.Changed) -> None:
-        """Handle template option changes"""
-        if event.radio_set.id == "template_options":
-            try:
-                clone_options = self.query_one("#clone_options")
-                if event.pressed.id == "template_clone":
-                    clone_options.display = True
-                else:
-                    clone_options.display = False
-            except:
-                pass
 
     def action_back_to_lab(self) -> None:
         """Return to schema laboratory"""
