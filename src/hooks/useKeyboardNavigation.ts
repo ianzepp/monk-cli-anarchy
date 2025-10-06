@@ -72,12 +72,46 @@ export const useKeyboardNavigation = () => {
         return;
       }
 
-      // Ctrl+G for "Go to module" dialog (SAFE)
-      if (event.key === 'g' && event.ctrlKey && !event.altKey && !event.shiftKey) {
-        event.preventDefault();
-        console.log('Ctrl+G - module selection (not implemented yet)');
-        showKeyFeedback('Ctrl+G');
-        return;
+      // Alt+letter combinations (MUCH SAFER than Ctrl+F*)
+      if (event.altKey && !event.ctrlKey && !event.shiftKey) {
+        switch (event.key.toLowerCase()) {
+          case 'n': // Alt+N - Next module
+            event.preventDefault();
+            console.log('Alt+N - Next module');
+            showKeyFeedback('Alt+N');
+            navigateToNextModule();
+            return;
+            
+          case 'p': // Alt+P - Previous module  
+            event.preventDefault();
+            console.log('Alt+P - Previous module');
+            showKeyFeedback('Alt+P');
+            const currentIndex = getCurrentModuleIndex();
+            const prevIndex = currentIndex === 0 ? VAULT_MODULES.length - 1 : currentIndex - 1;
+            navigateToModule(prevIndex);
+            return;
+            
+          case 'h': // Alt+H - Home (Overseer)
+            event.preventDefault();
+            console.log('Alt+H - Home/Overseer');
+            showKeyFeedback('Alt+H');
+            navigateToModule(0);
+            return;
+            
+          case 'r': // Alt+R - Registry
+            event.preventDefault();
+            console.log('Alt+R - Department Registry');
+            showKeyFeedback('Alt+R');
+            navigateToModule(1);
+            return;
+            
+          case 's': // Alt+S - Schema Laboratory
+            event.preventDefault();
+            console.log('Alt+S - Schema Laboratory');
+            showKeyFeedback('Alt+S');
+            navigateToModule(2);
+            return;
+        }
       }
 
       // Escape - Always go back to Overseer (SAFE)
